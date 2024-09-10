@@ -11,7 +11,7 @@ import homeLayoutModel from "../models/homeLayoutModel.js";
 import folderModel from "../models/folderModel.js";
 import csv from "csv-parser";
 import { stringify } from "csv-stringify";
-import csvParser from 'csv-parser';
+import csvParser from "csv-parser";
 import pageModel from "../models/pageModel.js";
 // image function
 
@@ -31,15 +31,13 @@ import taxModel from "../models/taxModel.js";
 import promoModel from "../models/promoModel.js";
 import productVarientModel from "../models/productVarientModel.js";
 import nodemailer from "nodemailer";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import wishlistModel from "../models/wishlistModel.js";
 import compareModel from "../models/compareModel.js";
 import notificationModel from "../models/notificationModel.js";
 import valetModel from "../models/valetModel.js";
 import valetRideModel from "../models/valetRideModel.js";
 import transactionModel from "../models/transactionModel.js";
-
-
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -93,7 +91,6 @@ export const SignupAdmin = async (req, res) => {
   }
 };
 
-
 export const ForgotAdminPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -121,35 +118,31 @@ export const ForgotAdminPassword = async (req, res) => {
       secure: process.env.MAIL_ENCRYPTION, // Set to true if using SSL/TLS
       auth: {
         user: process.env.MAIL_USERNAME, // Update with your email address
-        pass: process.env.MAIL_PASSWORD,// Update with your email password
-      }
+        pass: process.env.MAIL_PASSWORD, // Update with your email password
+      },
     });
 
     // Email message
     const mailOptions = {
       from: process.env.MAIL_FROM_ADDRESS, // Update with your email address
       to: email, // Update with your email address
-      subject: 'Cayro Shop Panel OTP ',
-      text: `OTP: ${otp}`
+      subject: "Cayro Shop Panel OTP ",
+      text: `OTP: ${otp}`,
     };
 
     // Send email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error(error);
-        res.status(500).send('Failed to send email');
+        res.status(500).send("Failed to send email");
       } else {
-
         return res.status(200).send({
           success: true,
           message: "OTP sent to your email address",
-          otp
+          otp,
         });
-
       }
     });
-
-
   } catch (error) {
     return res.status(500).send({
       message: `Error on forgot password: ${error}`,
@@ -160,7 +153,6 @@ export const ForgotAdminPassword = async (req, res) => {
 };
 
 export const ChangePassAdmin = async (req, res) => {
-
   try {
     const { email, password } = req.body;
 
@@ -181,12 +173,12 @@ export const ChangePassAdmin = async (req, res) => {
       });
     }
 
-
     // Hash the new password
     const hashedNewPassword = await bcrypt.hash(password, 10);
 
-
-    const newToken = jwt.sign({ email: admin.email }, process.env.SECRET_KEY, { expiresIn: '1h' });
+    const newToken = jwt.sign({ email: admin.email }, process.env.SECRET_KEY, {
+      expiresIn: "1h",
+    });
 
     // Update the admin's password and token with the new values
     admin.password = hashedNewPassword;
@@ -197,7 +189,6 @@ export const ChangePassAdmin = async (req, res) => {
       success: true,
       message: "Password changed successfully",
     });
-
   } catch (error) {
     console.error("Error on change password:", error);
     return res.status(500).send({
@@ -206,10 +197,7 @@ export const ChangePassAdmin = async (req, res) => {
       error: error.message, // Return error message for debugging
     });
   }
-
-
 };
-
 
 export const Adminlogin = async (req, res) => {
   try {
@@ -265,7 +253,9 @@ function formatFileSize(bytes) {
 export const handleImageUpload = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No image file uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No image file uploaded" });
     }
 
     const uploadedImage = req.file;
@@ -281,7 +271,8 @@ export const handleImageUpload = async (req, res) => {
     const filePathAndName = `new/${filename}`;
 
     let newImage;
-    if (!req.query.id) { // Check if id is not provided or undefined
+    if (!req.query.id) {
+      // Check if id is not provided or undefined
       newImage = new galleryModel({
         title: title,
         filePath: filePathAndName,
@@ -302,14 +293,14 @@ export const handleImageUpload = async (req, res) => {
 
     await newImage.save();
 
-    res.status(200).json({ success: true, message: "Image uploaded successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Image uploaded successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
-
 };
-
 
 export const getAllGalleryController = async (req, res) => {
   try {
@@ -425,7 +416,6 @@ export const AddAdminBlogController = async (req, res) => {
   }
 };
 
-
 export const getAllBlogAdmin = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default is 1
@@ -439,10 +429,7 @@ export const getAllBlogAdmin = async (req, res) => {
       const regex = new RegExp(searchTerm, "i"); // Case-insensitive regex pattern for the search term
 
       // Add regex pattern to search both username and email fields for the full name
-      query.$or = [
-        { title: regex },
-        { slug: regex },
-      ];
+      query.$or = [{ title: regex }, { slug: regex }];
     }
 
     const totalUser = await blogModel.countDocuments(query); // Count total documents matching the query
@@ -454,14 +441,17 @@ export const getAllBlogAdmin = async (req, res) => {
       .limit(limit)
       .lean(); // Convert documents to plain JavaScript objects
 
-    if (!Blog || Blog.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!Blog || Blog.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No Blogs Available",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All Blog list",
       Count: Blog.length,
       currentPage: page,
@@ -470,15 +460,14 @@ export const getAllBlogAdmin = async (req, res) => {
       Blog, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while All Blog: ${error.message}`,
       success: false,
       error,
     });
   }
 };
-
-
 
 export const AdmindeleteBlogController = async (req, res) => {
   try {
@@ -499,7 +488,6 @@ export const AdmindeleteBlogController = async (req, res) => {
     });
   }
 };
-
 
 export const AddAdminCategoryController = async (req, res) => {
   try {
@@ -884,7 +872,11 @@ export const AddAdminProduct = async (req, res) => {
       Category,
       tag,
       features,
-      specifications, gst, weight, hsn, sku
+      specifications,
+      gst,
+      weight,
+      hsn,
+      sku,
     } = req.body;
 
     // Validation
@@ -897,26 +889,31 @@ export const AddAdminProduct = async (req, res) => {
 
     let updatespecifications;
 
-    if (!specifications || !specifications.specifications || !specifications.specifications[0] || !specifications.specifications[0].heading) {
+    if (
+      !specifications ||
+      !specifications.specifications ||
+      !specifications.specifications[0] ||
+      !specifications.specifications[0].heading
+    ) {
       updatespecifications = {
-        "specifications": [
+        specifications: [
           {
-            "heading": " ",
-            "labels": [
+            heading: " ",
+            labels: [
               {
-                "label": " ",
-                "value": " "
-              }
-            ]
-          }
-        ]
+                label: " ",
+                value: " ",
+              },
+            ],
+          },
+        ],
       };
     } else {
       updatespecifications = specifications;
     }
 
     const lastProduct = await productModel.findOne().sort({ _id: -1 }).limit(1);
-    if (typeof lastProduct.p_id === 'string') {
+    if (typeof lastProduct.p_id === "string") {
       lastProduct.p_id = parseFloat(lastProduct.p_id);
     }
 
@@ -944,9 +941,12 @@ export const AddAdminProduct = async (req, res) => {
       Category,
       tag,
       features,
-      specifications: updatespecifications, gst, weight, hsn, sku
+      specifications: updatespecifications,
+      gst,
+      weight,
+      hsn,
+      sku,
     });
-
 
     await newProduct.save();
 
@@ -1033,8 +1033,13 @@ export const updateProductAdmin = async (req, res) => {
       variations,
       metaKeywords,
       Category,
-      tag, features,
-      specifications, weight, gst, hsn, sku
+      tag,
+      features,
+      specifications,
+      weight,
+      gst,
+      hsn,
+      sku,
     } = req.body;
 
     let updateFields = {
@@ -1052,8 +1057,13 @@ export const updateProductAdmin = async (req, res) => {
       variations,
       metaKeywords,
       Category,
-      tag, features,
-      specifications, weight, gst, hsn, sku
+      tag,
+      features,
+      specifications,
+      weight,
+      gst,
+      hsn,
+      sku,
     };
 
     const Product = await productModel.findByIdAndUpdate(id, updateFields, {
@@ -1098,7 +1108,6 @@ export const getProductIdAdmin = async (req, res) => {
   }
 };
 
-
 export const deleteProductAdmin = async (req, res) => {
   try {
     // Find and delete the product
@@ -1115,7 +1124,6 @@ export const deleteProductAdmin = async (req, res) => {
         success: true,
         message: "Product deleted!",
       });
-
     } else {
       // If product doesn't exist
       return res.status(404).send({
@@ -1132,7 +1140,6 @@ export const deleteProductAdmin = async (req, res) => {
     });
   }
 };
-
 
 export const AddAdminAttributeController = async (req, res) => {
   try {
@@ -1494,13 +1501,8 @@ export const getAllTag = async (req, res) => {
   }
 };
 
-
-
-
-
 export const editHomeData = async (req, res) => {
   try {
-
     const {
       meta_title,
       meta_description,
@@ -1517,11 +1519,21 @@ export const editHomeData = async (req, res) => {
       address,
       cash,
       razorpay,
-      serviceCharges, returnFareCharges, localHrCharges, localCharges13, localBeyond3hrsMinute, localNightChargesHour, OutstationOneWayChargesKm,
-      outstationChargesRoundTripDay, OutstationNightCharges, MealCharges, BookingCancelCharges, ShowStatus
+      serviceCharges,
+      returnFareCharges,
+      localHrCharges,
+      localCharges13,
+      localBeyond3hrsMinute,
+      localNightChargesHour,
+      OutstationOneWayChargesKm,
+      outstationChargesRoundTripDay,
+      OutstationNightCharges,
+      MealCharges,
+      BookingCancelCharges,
+      ShowStatus,
     } = req.body;
 
-    console.log(meta_favicon)
+    console.log(meta_favicon);
     let updateFields = {
       meta_title,
       meta_description,
@@ -1532,13 +1544,24 @@ export const editHomeData = async (req, res) => {
       footer,
       contact_details,
       payment_method,
-      footer_credit, phone,
+      footer_credit,
+      phone,
       email,
       address,
       cash,
       razorpay,
-      serviceCharges, returnFareCharges, localHrCharges, localCharges13, localBeyond3hrsMinute, localNightChargesHour, OutstationOneWayChargesKm,
-      outstationChargesRoundTripDay, OutstationNightCharges, MealCharges, BookingCancelCharges, ShowStatus
+      serviceCharges,
+      returnFareCharges,
+      localHrCharges,
+      localCharges13,
+      localBeyond3hrsMinute,
+      localNightChargesHour,
+      OutstationOneWayChargesKm,
+      outstationChargesRoundTripDay,
+      OutstationNightCharges,
+      MealCharges,
+      BookingCancelCharges,
+      ShowStatus,
     };
 
     const homeData = await homeModel.findOneAndUpdate({}, updateFields, {
@@ -1557,7 +1580,6 @@ export const editHomeData = async (req, res) => {
         success: false,
       });
     }
-
   } catch (error) {
     return res.status(400).json({
       message: `Error while Home Settings updating: ${error}`,
@@ -1567,11 +1589,8 @@ export const editHomeData = async (req, res) => {
   }
 };
 
-
-
 export const editHomeLayoutData = async (req, res) => {
   try {
-
     const {
       home_slider,
       trending_product,
@@ -1586,7 +1605,7 @@ export const editHomeLayoutData = async (req, res) => {
       latest_product_banner,
       latest_product_carousal,
       best_selling_smartphone,
-      recommended_products
+      recommended_products,
     } = req.body;
 
     let updateFields = {
@@ -1603,12 +1622,16 @@ export const editHomeLayoutData = async (req, res) => {
       latest_product_banner,
       latest_product_carousal,
       best_selling_smartphone,
-      recommended_products
+      recommended_products,
     };
 
-    const homeLayoutData = await homeLayoutModel.findOneAndUpdate({}, updateFields, {
-      new: true,
-    });
+    const homeLayoutData = await homeLayoutModel.findOneAndUpdate(
+      {},
+      updateFields,
+      {
+        new: true,
+      }
+    );
 
     if (homeLayoutData) {
       return res.status(200).json({
@@ -1622,7 +1645,6 @@ export const editHomeLayoutData = async (req, res) => {
         success: false,
       });
     }
-
   } catch (error) {
     return res.status(400).json({
       message: `Error while Home Layout updating: ${error}`,
@@ -1693,7 +1715,6 @@ export const getAllReviewsAdmin = async (req, res) => {
   }
 };
 
-
 export const deleteRatingAdmin = async (req, res) => {
   try {
     await ratingModel.findByIdAndDelete(req.params.id);
@@ -1730,8 +1751,6 @@ export const deleteUserAdmin = async (req, res) => {
   }
 };
 
-
-
 export const editReviewAdmin = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1760,32 +1779,31 @@ export const editReviewAdmin = async (req, res) => {
   }
 };
 
-// for order 
-
-
+// for order
 
 export const getAllOrderAdmin = async (req, res) => {
-
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default is 1
     const limit = parseInt(req.query.limit) || 10; // Number of documents per page, default is 10
     const searchTerm = req.query.search || ""; // Get search term from the query parameters
-    const endStatusOTP = req.query.endStatusOTP ? req.query.endStatusOTP.split(',') : []; // Get status filter from the query parameters and split into an array
-    const bookingTyp = req.query.bookingTyp ? req.query.bookingTyp.split(',') : []; // Get status filter from the query parameters and split into an array
-    const startStatusOTP = req.query.startStatusOTP ? req.query.startStatusOTP.split(',') : []; // Get status filter from the query parameters and split into an array
+    const endStatusOTP = req.query.endStatusOTP
+      ? req.query.endStatusOTP.split(",")
+      : []; // Get status filter from the query parameters and split into an array
+    const bookingTyp = req.query.bookingTyp
+      ? req.query.bookingTyp.split(",")
+      : []; // Get status filter from the query parameters and split into an array
+    const startStatusOTP = req.query.startStatusOTP
+      ? req.query.startStatusOTP.split(",")
+      : []; // Get status filter from the query parameters and split into an array
 
     const skip = (page - 1) * limit;
-
 
     const query = {};
     if (searchTerm) {
       const regex = new RegExp(searchTerm, "i"); // Case-insensitive regex pattern for the search term
 
       // Add regex pattern to search both username and email fields for the full name
-      query.$or = [
-        { orderId: regex },
-        { mode: regex },
-      ];
+      query.$or = [{ orderId: regex }, { mode: regex }];
     }
 
     // Add status filter to the query if statusFilter is provided
@@ -1799,8 +1817,6 @@ export const getAllOrderAdmin = async (req, res) => {
       query.endStatusOTP = { $in: endStatusOTP.map(Number) }; // Convert each element to Number
     }
 
-
-
     const total = await orderModel.countDocuments(query); // Count total documents matching the query
 
     const Order = await orderModel
@@ -1812,21 +1828,25 @@ export const getAllOrderAdmin = async (req, res) => {
         path: "userId",
         model: userModel,
         select: "username profile",
-      }).populate({
+      })
+      .populate({
         path: "driverId",
         model: userModel,
         select: "username profile",
-      }).lean();
+      })
+      .lean();
 
-
-    if (!Order || Order.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!Order || Order.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No Order Found",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All Order list",
       Count: Order.length,
       currentPage: page,
@@ -1835,23 +1855,21 @@ export const getAllOrderAdmin = async (req, res) => {
       Order, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while Order: ${error.message}`,
       success: false,
       error,
     });
   }
-
-
 };
-
 
 export const editOrderAdmin = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
-    const order = await orderModel.findById(id).populate('userId'); // Fetch order details including user
+    const order = await orderModel.findById(id).populate("userId"); // Fetch order details including user
 
     if (!order) {
       return res.status(404).json({
@@ -1881,21 +1899,28 @@ export const editOrderAdmin = async (req, res) => {
       auth: {
         user: process.env.MAIL_USERNAME, // Update with your email address
         pass: process.env.MAIL_PASSWORD, // Update with your email password
-      }
+      },
     });
 
     // Email message
     const mailOptions = {
       from: process.env.MAIL_FROM_ADDRESS, // Update with your email address
       to: email, // Use the extracted email here
-      subject: `cayroshop.com Order ${status === '0' ? 'cancel' :
-        status === '1' ? 'Placed' :
-          status === '2' ? 'Accepted' :
-            status === '3' ? 'Packed' :
-              status === '4' ? 'Shipped' :
-                status === '5' ? 'Delivered' :
-                  'Unknown'
-        }`,
+      subject: `cayroshop.com Order ${
+        status === "0"
+          ? "cancel"
+          : status === "1"
+          ? "Placed"
+          : status === "2"
+          ? "Accepted"
+          : status === "3"
+          ? "Packed"
+          : status === "4"
+          ? "Shipped"
+          : status === "5"
+          ? "Delivered"
+          : "Unknown"
+      }`,
       html: `
           <div class="bg-light w-100 h-100" style="background-color:#f8f9fa!important;width: 90%;font-family:sans-serif;padding:20px;border-radius:10px;padding: 100px 0px;margin: auto;">
      <div class="modal d-block" style="
@@ -1921,26 +1946,40 @@ export const editOrderAdmin = async (req, res) => {
     "> Order Id : #${order.orderId} </h5>
            <p style="color:black;" >Hey ${username},</p>
           <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#47ca00" stroke-width="2" stroke-linecap="square" stroke-linejoin="arcs"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-           <h2 style="color:black;"> Your Order Is ${status === '1' ? 'Placed' :
-          status === '2' ? 'Accepted' :
-            status === '3' ? 'Packed' :
-              status === '4' ? 'Shipped' :
-                status === '5' ? 'Delivered' :
-                  'Unknown'
-        }! </h2>
+           <h2 style="color:black;"> Your Order Is ${
+             status === "1"
+               ? "Placed"
+               : status === "2"
+               ? "Accepted"
+               : status === "3"
+               ? "Packed"
+               : status === "4"
+               ? "Shipped"
+               : status === "5"
+               ? "Delivered"
+               : "Unknown"
+           }! </h2>
          
            <p style="color:black;" > We'll send you a shipping confirmation email
-    as soon as your order ${status === '1' ? 'Placed' :
-          status === '2' ? 'Accepted' :
-            status === '3' ? 'Packed' :
-              status === '4' ? 'Shipped' :
-                status === '5' ? 'Delivered' :
-                  'Unknown'
-        }. </p>
+    as soon as your order ${
+      status === "1"
+        ? "Placed"
+        : status === "2"
+        ? "Accepted"
+        : status === "3"
+        ? "Packed"
+        : status === "4"
+        ? "Shipped"
+        : status === "5"
+        ? "Delivered"
+        : "Unknown"
+    }. </p>
           </div>
           <div class="modal-footer">
       
-            <a href="https://cayroshop.com/account/order/${_id}/${updatedOrder._id}" style="
+            <a href="https://cayroshop.com/account/order/${_id}/${
+        updatedOrder._id
+      }" style="
         background: green;
         color: white;
         padding: 10px;
@@ -1953,14 +1992,14 @@ export const editOrderAdmin = async (req, res) => {
         </div>
       </div>
     </div> </div>
-          `
+          `,
     };
 
     // Send email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error(error);
-        res.status(500).send('Failed to send email');
+        res.status(500).send("Failed to send email");
       } else {
         return res.status(200).json({
           message: "Order Updated!",
@@ -1968,7 +2007,6 @@ export const editOrderAdmin = async (req, res) => {
         });
       }
     });
-
   } catch (error) {
     return res.status(400).json({
       message: `Error while updating Rating: ${error}`,
@@ -1982,7 +2020,6 @@ export const editOrderAdmin = async (req, res) => {
 //   try {
 //     const { id } = req.params;
 //     const { driverId,text } = req.body;
-
 
 //     const order = await orderModel.findById(id);
 
@@ -2017,33 +2054,30 @@ export const editOrderAdmin = async (req, res) => {
 //   }
 // };
 
-// for valet 
-
+// for valet
 
 export const getAllValetAdmin = async (req, res) => {
-
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default is 1
     const limit = parseInt(req.query.limit) || 10; // Number of documents per page, default is 10
     const searchTerm = req.query.search || ""; // Get search term from the query parameters
-    const endStatusOTP = req.query.endStatusOTP ? req.query.endStatusOTP.split(',') : []; // Get status filter from the query parameters and split into an array
-    const startStatusOTP = req.query.startStatusOTP ? req.query.startStatusOTP.split(',') : []; // Get status filter from the query parameters and split into an array
-    const type = req.query.type ? req.query.type.split(',') : []; // Get status filter from the query parameters and split into an array
+    const endStatusOTP = req.query.endStatusOTP
+      ? req.query.endStatusOTP.split(",")
+      : []; // Get status filter from the query parameters and split into an array
+    const startStatusOTP = req.query.startStatusOTP
+      ? req.query.startStatusOTP.split(",")
+      : []; // Get status filter from the query parameters and split into an array
+    const type = req.query.type ? req.query.type.split(",") : []; // Get status filter from the query parameters and split into an array
 
     const skip = (page - 1) * limit;
-
 
     const query = {};
     if (searchTerm) {
       const regex = new RegExp(searchTerm, "i"); // Case-insensitive regex pattern for the search term
 
       // Add regex pattern to search both username and email fields for the full name
-      query.$or = [
-        { Valet_Id: regex },
-        { mode: regex },
-      ];
+      query.$or = [{ Valet_Id: regex }, { mode: regex }];
     }
-
 
     if (startStatusOTP.length > 0) {
       query.startStatusOTP = { $in: startStatusOTP.map(Number) }; // Convert each element to Number
@@ -2067,29 +2101,35 @@ export const getAllValetAdmin = async (req, res) => {
         path: "userId",
         model: userModel,
         select: "username profile",
-      }).populate({
+      })
+      .populate({
         path: "VendorId",
         model: userModel,
         select: "username profile",
-      }).populate({
+      })
+      .populate({
         path: "Valetride_Model",
         model: valetRideModel,
-        select: "userId ValetConfirm ValetRide_Id PickupStartLocation PickupEndLocation DropStartLocation DropEndLocation",
+        select:
+          "userId ValetConfirm ValetRide_Id PickupStartLocation PickupEndLocation DropStartLocation DropEndLocation",
         populate: {
           path: "userId",
           select: "username profile carNumber carName carImage", // Specify the fields you want to select from the userId model
-        }
-      }).lean();
+        },
+      })
+      .lean();
 
-
-    if (!Order || Order.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!Order || Order.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No Order Found",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All Order list",
       Count: Order.length,
       currentPage: page,
@@ -2098,17 +2138,14 @@ export const getAllValetAdmin = async (req, res) => {
       Order, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while Order: ${error.message}`,
       success: false,
       error,
     });
   }
-
-
 };
-
-
 
 export const editOrderDriverAdmin = async (req, res) => {
   try {
@@ -2168,7 +2205,6 @@ export const editOrderDriverAdmin = async (req, res) => {
       success: true,
       updatedOrder,
     });
-
   } catch (error) {
     console.error(`Error while updating Order: ${error}`);
     return res.status(500).json({
@@ -2237,7 +2273,6 @@ export const editOrderVendorAdmin = async (req, res) => {
       success: true,
       updatedOrder,
     });
-
   } catch (error) {
     console.error(`Error while updating Order: ${error}`);
     return res.status(500).json({
@@ -2253,7 +2288,7 @@ export const editOrderAdmin_old = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const order = await orderModel.findById(id).populate('userId'); // Fetch order details including user
+    const order = await orderModel.findById(id).populate("userId"); // Fetch order details including user
 
     if (!order) {
       return res.status(404).json({
@@ -2281,15 +2316,14 @@ export const editOrderAdmin_old = async (req, res) => {
       auth: {
         user: process.env.MAIL_USERNAME, // Update with your email address
         pass: process.env.MAIL_PASSWORD, // Update with your email password
-      }
+      },
     });
-
 
     // Email message
     const mailOptions = {
       from: process.env.MAIL_FROM_ADDRESS, // Update with your email address
       to: email, // Update with your email address
-      subject: 'Order Confirmation',
+      subject: "Order Confirmation",
       html: `
           <div class="bg-light w-100 h-100" style="background-color:#f8f9fa!important;width: 90%;font-family:sans-serif;padding:20px;border-radius:10px;padding: 100px 0px;margin: auto;">
      <div class="modal d-block" style="
@@ -2315,22 +2349,34 @@ export const editOrderAdmin_old = async (req, res) => {
     "> Order Id : #${order.orderId} </h5>
            <p style="color:black;" >Hey ${username},</p>
           <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#47ca00" stroke-width="2" stroke-linecap="square" stroke-linejoin="arcs"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-           <h2 style="color:black;"> Your Order Is ${status === '1' ? 'Placed' :
-          status === '2' ? 'Accepted' :
-            status === '3' ? 'Packed' :
-              status === '4' ? 'Shipped' :
-                status === '5' ? 'Delivered' :
-                  'Unknown'
-        }! </h2>
+           <h2 style="color:black;"> Your Order Is ${
+             status === "1"
+               ? "Placed"
+               : status === "2"
+               ? "Accepted"
+               : status === "3"
+               ? "Packed"
+               : status === "4"
+               ? "Shipped"
+               : status === "5"
+               ? "Delivered"
+               : "Unknown"
+           }! </h2>
          
            <p style="color:black;" > We'll send you a shipping confirmation email
-    as soon as your order ${status === '1' ? 'Placed' :
-          status === '2' ? 'Accepted' :
-            status === '3' ? 'Packed' :
-              status === '4' ? 'Shipped' :
-                status === '5' ? 'Delivered' :
-                  'Unknown'
-        }. </p>
+    as soon as your order ${
+      status === "1"
+        ? "Placed"
+        : status === "2"
+        ? "Accepted"
+        : status === "3"
+        ? "Packed"
+        : status === "4"
+        ? "Shipped"
+        : status === "5"
+        ? "Delivered"
+        : "Unknown"
+    }. </p>
           </div>
           <div class="modal-footer">
       
@@ -2347,14 +2393,14 @@ export const editOrderAdmin_old = async (req, res) => {
         </div>
       </div>
     </div> </div>
-          `
+          `,
     };
 
     // Send email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error(error);
-        res.status(500).send('Failed to send email');
+        res.status(500).send("Failed to send email");
       } else {
         return res.status(200).json({
           message: "Order Updated!",
@@ -2362,7 +2408,6 @@ export const editOrderAdmin_old = async (req, res) => {
         });
       }
     });
-
   } catch (error) {
     return res.status(400).json({
       message: `Error while updating Rating: ${error}`,
@@ -2372,82 +2417,62 @@ export const editOrderAdmin_old = async (req, res) => {
   }
 };
 
-
-
-
 export const AdminGetAllDriver = async (req, res) => {
-
   try {
-    const User = await userModel.find({ type: 1 }, '_id username profile');
+    const User = await userModel.find({ type: 1 }, "_id username profile");
 
     if (!User) {
-      return res.status(200).send
-        ({
-          message: 'NO User Found',
-          success: false,
-        });
-    }
-    return res.status(200).send
-      ({
-        message: 'All User List ',
-        proCount: User.length,
-        success: true,
-        User,
-      });
-
-  } catch (error) {
-    return res.status(500).send
-      ({
-        message: `error while All products ${error}`,
+      return res.status(200).send({
+        message: "NO User Found",
         success: false,
-        error
-      })
+      });
+    }
+    return res.status(200).send({
+      message: "All User List ",
+      proCount: User.length,
+      success: true,
+      User,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      message: `error while All products ${error}`,
+      success: false,
+      error,
+    });
   }
-
-
-}
+};
 
 export const AdminGetAllVendor = async (req, res) => {
-
   try {
-    const User = await userModel.find({ type: 2 }, '_id username profile');
+    const User = await userModel.find({ type: 2 }, "_id username profile");
 
     if (!User) {
-      return res.status(200).send
-        ({
-          message: 'NO User Found',
-          success: false,
-        });
-    }
-    return res.status(200).send
-      ({
-        message: 'All User List ',
-        proCount: User.length,
-        success: true,
-        User,
-      });
-
-  } catch (error) {
-    return res.status(500).send
-      ({
-        message: `error while All products ${error}`,
+      return res.status(200).send({
+        message: "NO User Found",
         success: false,
-        error
-      })
+      });
+    }
+    return res.status(200).send({
+      message: "All User List ",
+      proCount: User.length,
+      success: true,
+      User,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      message: `error while All products ${error}`,
+      success: false,
+      error,
+    });
   }
-
-
-}
-
-
-
+};
 
 export const getAllUserAdmin = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default is 1
     const limit = parseInt(req.query.limit) || 10; // Number of documents per page, default is 10
     const searchTerm = req.query.search || ""; // Get search term from the query parameters
-    const type = req.query.type ? req.query.type.split(',') : [];
+    const type = req.query.type ? req.query.type.split(",") : [];
 
     const skip = (page - 1) * limit;
 
@@ -2459,15 +2484,13 @@ export const getAllUserAdmin = async (req, res) => {
       query.$or = [
         { username: regex },
         { email: regex },
-        { phone: regex } // Add phone number search if needed
+        { phone: regex }, // Add phone number search if needed
       ];
     }
-
 
     if (type.length > 0) {
       query.type = { $in: type }; // Use $in operator to match any of the values in the array
     }
-
 
     const totalUser = await userModel.countDocuments(query); // Count total documents matching the query
 
@@ -2478,14 +2501,17 @@ export const getAllUserAdmin = async (req, res) => {
       .limit(limit)
       .lean(); // Convert documents to plain JavaScript objects
 
-    if (!users || users.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!users || users.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No users found",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All user list",
       userCount: users.length,
       currentPage: page,
@@ -2494,7 +2520,8 @@ export const getAllUserAdmin = async (req, res) => {
       users, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while getting users: ${error.message}`,
       success: false,
       error,
@@ -2540,27 +2567,19 @@ export const editUserDetailAdmin = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const {
-      username,
-      phone,
-      email,
-      password,
-      pincode,
-      Gender,
-      DOB,
-      address,
-    } = req.body;
+    const { username, phone, email, password, pincode, Gender, DOB, address } =
+      req.body;
 
-    const {
-      profile,
-      DLfile,
-      AadhaarFront,
-      AadhaarBack,
-      PoliceVerification,
-      PassPort,
-      Electricity,
-      WaterBill,
-    } = req.files;
+    // const {
+    //   profile,
+    //   DLfile,
+    //   AadhaarFront,
+    //   AadhaarBack,
+    //   PoliceVerification,
+    //   PassPort,
+    //   Electricity,
+    //   WaterBill,
+    // } = req.files;
 
     let updateFields = {
       username,
@@ -2576,37 +2595,37 @@ export const editUserDetailAdmin = async (req, res) => {
       updateFields.password = hashedPassword;
     }
 
-    if (profile) {
-      updateFields.profile = profile[0].path;
-    }
+    // if (profile) {
+    //   updateFields.profile = profile[0].path;
+    // }
 
-    if (DLfile) {
-      updateFields.DL = DLfile[0].path;
-    }
+    // if (DLfile) {
+    //   updateFields.DL = DLfile[0].path;
+    // }
 
-    if (AadhaarFront) {
-      updateFields.AadhaarFront = AadhaarFront[0].path;
-    }
+    // if (AadhaarFront) {
+    //   updateFields.AadhaarFront = AadhaarFront[0].path;
+    // }
 
-    if (AadhaarBack) {
-      updateFields.AadhaarBack = AadhaarBack[0].path;
-    }
+    // if (AadhaarBack) {
+    //   updateFields.AadhaarBack = AadhaarBack[0].path;
+    // }
 
-    if (PoliceVerification) {
-      updateFields.PoliceVerification = PoliceVerification[0].path;
-    }
+    // if (PoliceVerification) {
+    //   updateFields.PoliceVerification = PoliceVerification[0].path;
+    // }
 
-    if (PassPort) {
-      updateFields.PassPort = PassPort[0].path;
-    }
+    // if (PassPort) {
+    //   updateFields.PassPort = PassPort[0].path;
+    // }
 
-    if (Electricity) {
-      updateFields.Electricity = Electricity[0].path;
-    }
+    // if (Electricity) {
+    //   updateFields.Electricity = Electricity[0].path;
+    // }
 
-    if (WaterBill) {
-      updateFields.WaterBill = WaterBill[0].path;
-    }
+    // if (WaterBill) {
+    //   updateFields.WaterBill = WaterBill[0].path;
+    // }
 
     const user = await userModel.findByIdAndUpdate(id, updateFields, {
       new: true,
@@ -2633,7 +2652,6 @@ export const editUserDetailAdmin = async (req, res) => {
   }
 };
 
-
 export const getUserIdAdmin = async (req, res) => {
   try {
     const { id } = req.params;
@@ -2658,8 +2676,7 @@ export const getUserIdAdmin = async (req, res) => {
   }
 };
 
-
-// for folder logic 
+// for folder logic
 
 export const AddAdminFolderController = async (req, res) => {
   try {
@@ -2707,7 +2724,6 @@ export const AddAdminFolderController = async (req, res) => {
   }
 };
 
-
 export const GetFolderIDAdmin = async (req, res) => {
   const { id } = req.params;
 
@@ -2733,7 +2749,6 @@ export const GetFolderIDAdmin = async (req, res) => {
   }
 };
 
-
 export const GetFolderAdmin = async (req, res) => {
   try {
     const { id } = req.query;
@@ -2746,8 +2761,6 @@ export const GetFolderAdmin = async (req, res) => {
       ]);
 
       const userId = req.params.id;
-
-
 
       if (!parentFolder) {
         return res.status(404).send({
@@ -2781,14 +2794,11 @@ export const GetFolderAdmin = async (req, res) => {
   }
 };
 
-
-
 export const GetImageAdmin = async (req, res) => {
   try {
     const { id } = req.query;
 
     if (id) {
-
       // Find galleryModel items for the specified user ID
       const Gallery = await galleryModel.find({ folderId: id }).lean();
 
@@ -2822,9 +2832,6 @@ export const GetImageAdmin = async (req, res) => {
     });
   }
 };
-
-
-
 
 export const UpdateFolderAdmin = async (req, res) => {
   try {
@@ -2878,7 +2885,6 @@ export const UpdateFolderAdmin = async (req, res) => {
   }
 };
 
-
 export const deleteFolderAdmin = async (req, res) => {
   try {
     await folderModel.findByIdAndDelete(req.params.id);
@@ -2896,7 +2902,6 @@ export const deleteFolderAdmin = async (req, res) => {
     });
   }
 };
-
 
 // for zones
 
@@ -2950,7 +2955,7 @@ export const getAllZonesAdmin = async (req, res) => {
       query.$or = [
         { username: regex },
         { email: regex },
-        { phone: regex } // Add phone number search if needed
+        { phone: regex }, // Add phone number search if needed
       ];
     }
 
@@ -2963,14 +2968,17 @@ export const getAllZonesAdmin = async (req, res) => {
       .limit(limit)
       .lean(); // Convert documents to plain JavaScript objects
 
-    if (!zones || zones.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!zones || zones.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No zones found",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All zones list",
       Count: zones.length,
       currentPage: page,
@@ -2979,7 +2987,8 @@ export const getAllZonesAdmin = async (req, res) => {
       zones, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while getting zones: ${error.message}`,
       success: false,
       error,
@@ -2992,7 +3001,7 @@ export const updateZonesAdmin = async (req, res) => {
     const { id } = req.params;
     const { name, status, primary } = req.body;
 
-    console.log('primary', primary)
+    console.log("primary", primary);
 
     // Check if primary is set to "true"
     if (primary === true) {
@@ -3002,7 +3011,7 @@ export const updateZonesAdmin = async (req, res) => {
       // If existingPrimaryZone is found, it means primary is already set to 'true'
       if (existingPrimaryZone) {
         return res.status(400).json({
-          message: 'Zones primary already set!',
+          message: "Zones primary already set!",
           success: false,
         });
       }
@@ -3012,7 +3021,9 @@ export const updateZonesAdmin = async (req, res) => {
     const updateFields = { name, status, primary };
 
     // Update the zone
-    const updatedZone = await zonesModel.findByIdAndUpdate(id, updateFields, { new: true });
+    const updatedZone = await zonesModel.findByIdAndUpdate(id, updateFields, {
+      new: true,
+    });
 
     return res.status(200).json({
       message: "Zones Updated!",
@@ -3027,7 +3038,6 @@ export const updateZonesAdmin = async (req, res) => {
     });
   }
 };
-
 
 export const getZonesIdAdmin = async (req, res) => {
   try {
@@ -3072,7 +3082,6 @@ export const deleteZonesAdmin = async (req, res) => {
 };
 
 export const ViewAllAdminZones = async (req, res) => {
-
   try {
     // Query the database for all ratings where status is 1
     const Zones = await zonesModel.find({});
@@ -3082,11 +3091,9 @@ export const ViewAllAdminZones = async (req, res) => {
     console.error("Error fetching ratings:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
+};
 
-}
-
-
-// for tax 
+// for tax
 
 export const AddAdminTaxController = async (req, res) => {
   try {
@@ -3102,7 +3109,11 @@ export const AddAdminTaxController = async (req, res) => {
 
     // Create a new category with the specified parent
     const newTax = new taxModel({
-      name, rate, type, zoneId, status
+      name,
+      rate,
+      type,
+      zoneId,
+      status,
     });
     await newTax.save();
 
@@ -3134,10 +3145,7 @@ export const getAllTaxAdmin = async (req, res) => {
       const regex = new RegExp(searchTerm, "i"); // Case-insensitive regex pattern for the search term
 
       // Add regex pattern to search both username and email fields for the full name
-      query.$or = [
-        { name: regex },
-        { rate: regex },
-      ];
+      query.$or = [{ name: regex }, { rate: regex }];
     }
 
     const totalUser = await taxModel.countDocuments(query); // Count total documents matching the query
@@ -3149,14 +3157,17 @@ export const getAllTaxAdmin = async (req, res) => {
       .limit(limit)
       .lean(); // Convert documents to plain JavaScript objects
 
-    if (!Tax || Tax.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!Tax || Tax.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No tax found",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All tax list",
       Count: Tax.length,
       currentPage: page,
@@ -3165,7 +3176,8 @@ export const getAllTaxAdmin = async (req, res) => {
       Tax, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while getting Tax: ${error.message}`,
       success: false,
       error,
@@ -3180,7 +3192,11 @@ export const updateTaxAdmin = async (req, res) => {
     const { name, rate, type, zoneId, status } = req.body;
 
     let updateFields = {
-      name, rate, type, zoneId, status
+      name,
+      rate,
+      type,
+      zoneId,
+      status,
     };
 
     const Tax = await taxModel.findByIdAndUpdate(id, updateFields, {
@@ -3243,7 +3259,7 @@ export const deleteTaxAdmin = async (req, res) => {
   }
 };
 
-// for promo code 
+// for promo code
 
 export const AddAdminPromoController = async (req, res) => {
   try {
@@ -3259,7 +3275,10 @@ export const AddAdminPromoController = async (req, res) => {
 
     // Create a new category with the specified parent
     const newPromo = new promoModel({
-      name, rate, type, status
+      name,
+      rate,
+      type,
+      status,
     });
     await newPromo.save();
 
@@ -3291,10 +3310,7 @@ export const getAllPromoAdmin = async (req, res) => {
       const regex = new RegExp(searchTerm, "i"); // Case-insensitive regex pattern for the search term
 
       // Add regex pattern to search both username and email fields for the full name
-      query.$or = [
-        { name: regex },
-        { rate: regex },
-      ];
+      query.$or = [{ name: regex }, { rate: regex }];
     }
 
     const totalUser = await promoModel.countDocuments(query); // Count total documents matching the query
@@ -3306,14 +3322,17 @@ export const getAllPromoAdmin = async (req, res) => {
       .limit(limit)
       .lean(); // Convert documents to plain JavaScript objects
 
-    if (!Promo || Promo.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!Promo || Promo.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No tax Promo code",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All Promo list",
       Count: Promo.length,
       currentPage: page,
@@ -3322,7 +3341,8 @@ export const getAllPromoAdmin = async (req, res) => {
       Promo, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while Promo Tax: ${error.message}`,
       success: false,
       error,
@@ -3337,7 +3357,10 @@ export const updatePromoAdmin = async (req, res) => {
     const { name, rate, type, status } = req.body;
 
     let updateFields = {
-      name, rate, type, status
+      name,
+      rate,
+      type,
+      status,
     };
 
     const Promo = await promoModel.findByIdAndUpdate(id, updateFields, {
@@ -3400,7 +3423,6 @@ export const deletePromoAdmin = async (req, res) => {
   }
 };
 
-
 export const deleteOrderAdmin = async (req, res) => {
   try {
     await orderModel.findByIdAndDelete(req.params.id);
@@ -3418,8 +3440,6 @@ export const deleteOrderAdmin = async (req, res) => {
     });
   }
 };
-
-
 
 export const deleteValetAdmin = async (req, res) => {
   try {
@@ -3439,13 +3459,12 @@ export const deleteValetAdmin = async (req, res) => {
   }
 };
 
-
-// for pages 
-
+// for pages
 
 export const AddAdminPageController = async (req, res) => {
   try {
-    const { title, description, metaTitle, metaDescription, metaKeywords } = req.body;
+    const { title, description, metaTitle, metaDescription, metaKeywords } =
+      req.body;
 
     // Validation
     if (!title || !description) {
@@ -3457,7 +3476,11 @@ export const AddAdminPageController = async (req, res) => {
 
     // Create a new category with the specified parent
     const newPage = new pageModel({
-      title, description, metaTitle, metaDescription, metaKeywords
+      title,
+      description,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
     });
     await newPage.save();
 
@@ -3475,7 +3498,6 @@ export const AddAdminPageController = async (req, res) => {
     });
   }
 };
-
 
 export const getAllPageAdmin = async (req, res) => {
   try {
@@ -3505,14 +3527,17 @@ export const getAllPageAdmin = async (req, res) => {
       .limit(limit)
       .lean(); // Convert documents to plain JavaScript objects
 
-    if (!Mpage || Mpage.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!Mpage || Mpage.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No Page found",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All Page list",
       Count: Mpage.length,
       currentPage: page,
@@ -3521,7 +3546,8 @@ export const getAllPageAdmin = async (req, res) => {
       Mpage, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while Page: ${error.message}`,
       success: false,
       error,
@@ -3533,11 +3559,15 @@ export const updatePageAdmin = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { title, description, metaTitle, metaDescription, metaKeywords
-    } = req.body;
+    const { title, description, metaTitle, metaDescription, metaKeywords } =
+      req.body;
 
     let updateFields = {
-      title, description, metaTitle, metaDescription, metaKeywords
+      title,
+      description,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
     };
 
     const MPage = await pageModel.findByIdAndUpdate(id, updateFields, {
@@ -3600,10 +3630,7 @@ export const deletePageAdmin = async (req, res) => {
   }
 };
 
-
 // for Product Varients
-
-
 
 export const getAllproductVarientAdmin = async (req, res) => {
   try {
@@ -3618,10 +3645,7 @@ export const getAllproductVarientAdmin = async (req, res) => {
       const regex = new RegExp(searchTerm, "i"); // Case-insensitive regex pattern for the search term
 
       // Add regex pattern to search both username and email fields for the full name
-      query.$or = [
-        { name: regex },
-        { rate: regex },
-      ];
+      query.$or = [{ name: regex }, { rate: regex }];
     }
 
     const totalCount = await productVarientModel.countDocuments(query); // Count total documents matching the query
@@ -3633,14 +3657,17 @@ export const getAllproductVarientAdmin = async (req, res) => {
       .limit(limit)
       .lean(); // Convert documents to plain JavaScript objects
 
-    if (!productVarient || productVarient.length === 0) { // Check if no users found
-      return res.status(404).send({ // Send 404 Not Found response
+    if (!productVarient || productVarient.length === 0) {
+      // Check if no users found
+      return res.status(404).send({
+        // Send 404 Not Found response
         message: "No tax Promo code",
         success: false,
       });
     }
 
-    return res.status(200).send({ // Send successful response
+    return res.status(200).send({
+      // Send successful response
       message: "All Product Varient list",
       Count: productVarient.length,
       currentPage: page,
@@ -3649,7 +3676,8 @@ export const getAllproductVarientAdmin = async (req, res) => {
       productVarient, // Return users array
     });
   } catch (error) {
-    return res.status(500).send({ // Send 500 Internal Server Error response
+    return res.status(500).send({
+      // Send 500 Internal Server Error response
       message: `Error while Promo Tax: ${error.message}`,
       success: false,
       error,
@@ -3664,7 +3692,10 @@ export const updateproductVarientAdmin = async (req, res) => {
     const { name, rate, type, status } = req.body;
 
     let updateFields = {
-      name, rate, type, status
+      name,
+      rate,
+      type,
+      status,
     };
 
     const Promo = await productVarient.findByIdAndUpdate(id, updateFields, {
@@ -3727,38 +3758,38 @@ export const deleteproductVarientAdmin = async (req, res) => {
   }
 };
 
-
-
 export const exportAllProAdmin = async (req, res) => {
-
   try {
     // Fetch data from the database (assuming using Mongoose)
     //   const products = await productModel.find({}, 'title description pImage images slug regularPrice salePrice status stock Category weight tag').lean();
-    const products = await productModel.find({}, 'p_id title description Category pImage  images slug regularPrice salePrice status stock weight gst hsn sku specifications variations  metaTitle metaDescription metaKeywords ').lean();
+    const products = await productModel
+      .find(
+        {},
+        "p_id title description Category pImage  images slug regularPrice salePrice status stock weight gst hsn sku specifications variations  metaTitle metaDescription metaKeywords "
+      )
+      .lean();
 
-    const filename = 'all_products.csv';
+    const filename = "all_products.csv";
 
     // Stringify the product data
     stringify(products, { header: true }, (err, csvString) => {
       if (err) {
-        console.error('Error generating CSV:', err);
-        res.status(500).send('Internal Server Error');
+        console.error("Error generating CSV:", err);
+        res.status(500).send("Internal Server Error");
         return;
       }
 
       // Set response headers
-      res.header('Content-Type', 'text/csv');
+      res.header("Content-Type", "text/csv");
       res.attachment(filename);
 
       // Send CSV data
       res.send(csvString);
-
     });
   } catch (error) {
-    console.error('Error exporting products:', error);
-    res.status(500).send('Internal Server Error');
+    console.error("Error exporting products:", error);
+    res.status(500).send("Internal Server Error");
   }
-
 };
 
 // export const importAllProAdmin = async (req, res) => {
@@ -3840,8 +3871,6 @@ export const exportAllProAdmin = async (req, res) => {
 //   }
 // };
 
-
-
 export const importAllProAdmin = async (req, res) => {
   try {
     const jsonData = req.body;
@@ -3849,47 +3878,52 @@ export const importAllProAdmin = async (req, res) => {
     if (!jsonData || !Array.isArray(jsonData)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid JSON data provided'
+        message: "Invalid JSON data provided",
       });
     }
 
     try {
       // Process the parsed JSON data
       for (const productData of jsonData) {
-
         if (productData.p_id !== undefined) {
-
           if (!isNaN(productData.p_id)) {
             productData.p_id = parseFloat(productData.p_id);
           }
-          if (productData.p_id !== 'new') {
+          if (productData.p_id !== "new") {
             try {
               // Check if the product already exists
-              const existingProduct = await productModel.findOne({ p_id: productData.p_id }).lean();
+              const existingProduct = await productModel
+                .findOne({ p_id: productData.p_id })
+                .lean();
               if (existingProduct) {
-
-                if (typeof productData.regularPrice === 'string') {
-                  productData.regularPrice = parseFloat(productData.regularPrice);
+                if (typeof productData.regularPrice === "string") {
+                  productData.regularPrice = parseFloat(
+                    productData.regularPrice
+                  );
                 }
-                if (typeof productData.salePrice === 'string') {
+                if (typeof productData.salePrice === "string") {
                   productData.salePrice = parseFloat(productData.salePrice);
                 }
-                if (typeof productData.status === 'string') {
+                if (typeof productData.status === "string") {
                   productData.status = productData.status.toLowerCase();
                 }
-                await productModel.findOneAndUpdate({ p_id: productData.p_id }, productData);
-
+                await productModel.findOneAndUpdate(
+                  { p_id: productData.p_id },
+                  productData
+                );
               }
-
             } catch (error) {
-              console.error('Error importing product:', error);
+              console.error("Error importing product:", error);
             }
-          } else { }
+          } else {
+          }
 
-          if (productData.p_id === 'new') {
-
-            const lastProduct = await productModel.findOne().sort({ _id: -1 }).limit(1);
-            if (typeof lastProduct.p_id === 'string') {
+          if (productData.p_id === "new") {
+            const lastProduct = await productModel
+              .findOne()
+              .sort({ _id: -1 })
+              .limit(1);
+            if (typeof lastProduct.p_id === "string") {
               lastProduct.p_id = parseFloat(lastProduct.p_id);
             }
 
@@ -3898,19 +3932,16 @@ export const importAllProAdmin = async (req, res) => {
             // Calculate the auto-increment ID
             const pro_id = lastProductId + 1;
 
-
             try {
-
-              if (typeof productData.regularPrice === 'string') {
+              if (typeof productData.regularPrice === "string") {
                 productData.regularPrice = parseFloat(productData.regularPrice);
               }
-              if (typeof productData.salePrice === 'string') {
+              if (typeof productData.salePrice === "string") {
                 productData.salePrice = parseFloat(productData.salePrice);
               }
-              if (typeof productData.status === 'string') {
+              if (typeof productData.status === "string") {
                 productData.status = productData.status.toLowerCase();
               }
-
 
               const {
                 title,
@@ -3930,7 +3961,7 @@ export const importAllProAdmin = async (req, res) => {
                 variations,
                 metaTitle,
                 metaDescription,
-                metaKeywords
+                metaKeywords,
               } = productData;
 
               const newProduct = new productModel({
@@ -3952,52 +3983,42 @@ export const importAllProAdmin = async (req, res) => {
                 variations,
                 metaTitle,
                 metaDescription,
-                metaKeywords
+                metaKeywords,
               });
-
 
               // Save the product to the database
               await newProduct.save();
-
             } catch (error) {
-              console.error('Error importing product:', error);
+              console.error("Error importing product:", error);
             }
-
           }
 
-
-          console.log(productData.p_id)
-
+          console.log(productData.p_id);
         }
-
       }
 
-      console.log('Products imported successfully');
+      console.log("Products imported successfully");
       return res.status(200).json({
         success: true,
-        message: 'Products imported successfully'
+        message: "Products imported successfully",
       });
-
     } catch (error) {
-      console.error('Error importing products:', error);
+      console.error("Error importing products:", error);
       return res.status(500).json({
         success: false,
-        message: 'Error while importing products',
-        error: error.message
+        message: "Error while importing products",
+        error: error.message,
       });
     }
-
   } catch (error) {
-    console.error('Error importing products:', error);
+    console.error("Error importing products:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error while importing products',
-      error: error.message
+      message: "Error while importing products",
+      error: error.message,
     });
   }
 };
-
-
 
 // Wallet functionality
 
@@ -4006,10 +4027,10 @@ export const AdminUpdateWallet = async (req, res) => {
     const { _id, WalletType, Comment, Amount } = req.body;
     const FinalAmount = Number(Amount);
     let Type = null;
-    console.log(_id, WalletType, Comment, FinalAmount)
-    if (WalletType === 'minus') {
+    console.log(_id, WalletType, Comment, FinalAmount);
+    if (WalletType === "minus") {
       Type = 1;
-    } else if (WalletType === 'plus') {
+    } else if (WalletType === "plus") {
       Type = 0;
     }
 
@@ -4024,7 +4045,7 @@ export const AdminUpdateWallet = async (req, res) => {
     const transaction = new transactionModel({
       userId: _id,
       type: Type,
-      note: Comment + ' (admin)',
+      note: Comment + " (admin)",
       amount: FinalAmount * (Type === 1 ? -1 : 1), // Ensure amount is negative if Type is 1 (minus)
     });
 
@@ -4040,9 +4061,9 @@ export const AdminUpdateWallet = async (req, res) => {
       });
     }
 
-    if (WalletType === 'minus') {
+    if (WalletType === "minus") {
       user.wallet -= FinalAmount; // Subtract Amount from wallet
-    } else if (WalletType === 'plus') {
+    } else if (WalletType === "plus") {
       user.wallet += FinalAmount; // Add Amount to wallet
     }
 
@@ -4052,7 +4073,6 @@ export const AdminUpdateWallet = async (req, res) => {
       success: true,
       message: "Wallet updated successfully",
     });
-
   } catch (error) {
     return res.status(500).send({
       message: `Error adding to wallet: ${error.message}`,
@@ -4062,10 +4082,7 @@ export const AdminUpdateWallet = async (req, res) => {
   }
 };
 
-
-
 export const AdminCreateValetController = async (req, res) => {
-
   const {
     ValetLocation,
     ValetAddress,
@@ -4073,34 +4090,30 @@ export const AdminCreateValetController = async (req, res) => {
     type,
     ValetImage,
     startDate,
-    endDate, ValetName, latitude, longitude, support, locations
+    endDate,
+    ValetName,
+    latitude,
+    longitude,
+    support,
+    locations,
   } = req.body;
 
   try {
-
-
     // Create order for the updated user
     if (
-
       !ValetLocation ||
       !ValetAddress ||
       !startDate ||
       !endDate ||
-      !type || !ValetName
-
+      !type ||
+      !ValetName
     ) {
       return res.status(400).json({
         success: false,
         message: "Please provide all fields for the Booking",
         body: req.body,
       });
-    }
-    else if (
-
-      !latitude ||
-      !longitude
-
-    ) {
+    } else if (!latitude || !longitude) {
       return res.status(400).json({
         success: false,
         message: "Please try again later Location not found",
@@ -4135,7 +4148,7 @@ export const AdminCreateValetController = async (req, res) => {
       latitude,
       longitude,
       support,
-      locations
+      locations,
     });
 
     await newOrder.save();
@@ -4146,16 +4159,13 @@ export const AdminCreateValetController = async (req, res) => {
     // // Save updated user data
     // await user.save({ session });
 
-
     // Sending the response after order creation
     res.status(200).json({
       success: true,
       message: "valet order created successfully",
       order: newOrder,
     });
-
   } catch (error) {
-
     console.error("Error:", error);
     return res.status(400).json({
       success: false,
@@ -4167,11 +4177,7 @@ export const AdminCreateValetController = async (req, res) => {
 
 export const AdminTestValetController = async (req, res) => {
   // Sample locations array to update
-  const locations = [
-    "parking 1",
-    "parking 2",
-    "parking 3"
-  ];
+  const locations = ["parking 1", "parking 2", "parking 3"];
 
   // Fixed ID for the example; usually, you'd get this from req.params or req.body
   const id = "66d18eaae5aeb3c25a6804f0";
@@ -4197,7 +4203,6 @@ export const AdminTestValetController = async (req, res) => {
       message: "Valet updated successfully",
       valet: updatedValet, // Return the updated valet
     });
-
   } catch (error) {
     console.error("Error:", error);
     return res.status(400).json({

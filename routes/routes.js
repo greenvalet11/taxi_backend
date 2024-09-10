@@ -73,10 +73,15 @@ import {
   deleteTagAdmin,
   getAllTag,
   editHomeData,
-  editHomeLayoutData, getAllValetAdmin, editOrderVendorAdmin, AdminUpdateWallet,
-  AdminCreateValetController, deleteValetAdmin,
+  editHomeLayoutData,
+  getAllValetAdmin,
+  editOrderVendorAdmin,
+  AdminUpdateWallet,
+  AdminCreateValetController,
+  deleteValetAdmin,
   deleteUserAdmin,
-  editUserDetailAdmin, AdminTestValetController
+  editUserDetailAdmin,
+  AdminTestValetController,
 } from "../controller/adminController.js";
 import {
   SignupUserImage,
@@ -127,6 +132,7 @@ import {
   getProductsByHSN,
   AuthUserByID,
   AuthUserByPhone,
+  AuthUserByPhoneCar,
   updateProfileUser,
   SignupNewUser,
   LoginUserWithOTP,
@@ -188,8 +194,10 @@ import {
   UpdateUserValetRide,
   UpdateUserCancelOrder,
   LoginAndVerifyOTP,
-  AllValetByUser, AllValetServiceByUser,
-  userValetParkingUserController, userAdminValet,
+  AllValetByUser,
+  AllValetServiceByUser,
+  userValetParkingUserController,
+  userAdminValet,
   userAdminValetId,
   editValetRidePayment,
   handleImageCompression,
@@ -200,9 +208,7 @@ import {
   UpdateUserValetRideVerifyOTP,
   UpdateUserValetRideKey,
   VendorUpdateUserValetRideKey,
-  deleteOldFiles
-
-
+  deleteOldFiles,
 } from "../controller/userController.js";
 import authenticateToken from "../middleware/authMiddleware.js";
 import {
@@ -317,8 +323,6 @@ router.delete("/admin/delete-rating/:id", deleteRatingAdmin);
 router.delete("/admin/delete-user/:id", deleteUserAdmin);
 router.put("/admin/edit-user-detail/:id", SignupUserImage, editUserDetailAdmin);
 
-
-
 // order Admin
 
 router.get("/admin/all-order", getAllOrderAdmin);
@@ -327,12 +331,9 @@ router.put("/admin/update-order/:id", editOrderAdmin);
 router.get("/admin/all-valet", getAllValetAdmin);
 router.put("/admin/update-order/:id", editOrderAdmin);
 
-
-
 // user Admin
 router.put("/admin/update-driver-order/:id/", editOrderDriverAdmin);
 router.put("/admin/update-vendor-order/:id/", editOrderVendorAdmin);
-
 
 router.get("/admin/all-user", getAllUserAdmin);
 router.put("/admin/update-user/:id", editUserAdmin);
@@ -393,13 +394,7 @@ router.post(
   AdminCreateValetController
 );
 
-router.get(
-  "/admin/update-valet/",
-  AdminTestValetController
-);
-
-
-
+router.get("/admin/update-valet/", AdminTestValetController);
 
 // for export admin
 
@@ -418,15 +413,9 @@ router.post(
   SignupUserValetType
 );
 
-
-router.post(
-  "/create-valet-ride",
-  checkOrigin,
-  CreateValetRide
-);
+router.post("/create-valet-ride", checkOrigin, CreateValetRide);
 
 router.put("/update-valet-ride-payment/:id", editValetRidePayment);
-
 
 router.post(
   "/update-user-car-type",
@@ -447,23 +436,9 @@ router.get(
   userValetRideUserControllerById
 );
 
+router.get("/get-car/:valetId", checkOrigin, ValetRideUserController);
 
-router.get(
-  "/get-car/:valetId",
-  checkOrigin,
-  ValetRideUserController
-);
-
-router.get(
-  "/send-car-noti/:valetId",
-  checkOrigin,
-  ValetRideNotiUserController
-);
-
-
-
-
-
+router.get("/send-car-noti/:valetId", checkOrigin, ValetRideNotiUserController);
 
 // router.post("/signup", checkOrigin, SignupUser);
 router.post("/login", checkOrigin, Userlogin);
@@ -478,8 +453,6 @@ router.post(
 router.put("/cancel-order", checkOrigin, UpdateUserCancelOrder);
 router.put("/cancel-valet", checkOrigin, UpdateUserCancelOrder);
 router.put("/review-order", checkOrigin, UpdateUserReviewOrder);
-
-
 
 router.post(
   "/create-valet-order/",
@@ -597,7 +570,7 @@ router.post("/signup-new-user/", checkOrigin, SignupNewUser);
 
 router.post("/auth-user/", checkOrigin, AuthUserByID);
 router.get("/auth-user-phone/:phone", checkOrigin, AuthUserByPhone);
-
+router.get("/auth-user-phone-car/:phone", checkOrigin, AuthUserByPhoneCar);
 
 router.post("/contact-enquire/", checkOrigin, contactEnquire);
 
@@ -645,20 +618,17 @@ router.get(
   vendorValeRideViewController
 );
 
-
 router.get(
   "/user-valet-parking-view/:userId/:valetId",
   checkOrigin,
   userValetParkingUserController
 );
 
-
 // for vendor
 
 router.get("/user-admin-valet/", checkOrigin, userAdminValet);
 
 router.get("/user-admin-valet/:id", checkOrigin, userAdminValetId);
-
 
 router.get("/get-all-valet/:id", checkOrigin, getAllBookValet);
 
@@ -667,11 +637,7 @@ router.post("/accept-valet", checkOrigin, AcceptValetVendor);
 router.get("/all-valet-vendor/:id/:type", checkOrigin, AllValetByVendor);
 router.get("/all-drivers-vendor/:id", checkOrigin, AllDriversByVendor);
 
-router.get(
-  "/user-valet-view/:valetId",
-  checkOrigin,
-  userValetViewController
-);
+router.get("/user-valet-view/:valetId", checkOrigin, userValetViewController);
 router.get(
   "/driver-valet-view/:driverId/:valetId",
   checkOrigin,
@@ -690,7 +656,6 @@ router.put("/remove-valet-driver/:id/", UnAssignedDriverValet);
 
 router.put("/change-valet-driver-ride/:id/", AssignedDriverValetRide);
 
-
 router.get("/start-valet-request/:id/", checkOrigin, StartValetRide);
 router.get("/end-valet-request/:id/", checkOrigin, EndValetRide);
 
@@ -706,10 +671,8 @@ router.put("/update-valet-ride-verify-id/:id/", UpdateUserValetRideVerifyOTP);
 router.get("/update-valet-ride-key/:id/", UpdateUserValetRideKey);
 router.get("/vendor-update-valet-ride-key/:id/", VendorUpdateUserValetRideKey);
 
-
 router.post("/login-verify-otp/", checkOrigin, LoginAndVerifyOTP);
 
 router.post("/delete-old-files", checkOrigin, deleteOldFiles);
-
 
 export default router;

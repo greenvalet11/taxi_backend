@@ -53,7 +53,6 @@ const storage = multer.diskStorage({
   },
 });
 
-
 const storageDoc = multer.diskStorage({
   destination: function (req, file, cb) {
     // Define the destination folder where uploaded images will be saved
@@ -71,7 +70,6 @@ const storageDoc = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const uploadDoc = multer({ storage: storageDoc });
-
 
 export const uploadImage = upload.single("image");
 
@@ -171,8 +169,8 @@ export const SignupUserImage = upload.fields([
 const compressImage = async (inputPath, outputPath) => {
   await sharp(inputPath)
     .resize({ width: 800 }) // Resize image to a maximum width of 800px
-    .jpeg({ quality: 80 })  // Compress to JPEG format with 80% quality
-    .toFile(outputPath);   // Save the processed image
+    .jpeg({ quality: 80 }) // Compress to JPEG format with 80% quality
+    .toFile(outputPath); // Save the processed image
 };
 
 // Middleware function to handle image compression
@@ -184,7 +182,10 @@ export const handleImageCompression = async (req, res, next) => {
     for (const [fieldname, fileArray] of Object.entries(files)) {
       for (const file of fileArray) {
         const tempPath = file.path;
-        const outputPath = tempPath.replace(/-(\d+)\.(\w+)$/, (match, p1, ext) => `-${p1}-compressed.${ext}`);
+        const outputPath = tempPath.replace(
+          /-(\d+)\.(\w+)$/,
+          (match, p1, ext) => `-${p1}-compressed.${ext}`
+        );
 
         // Compress the image
         await compressImage(tempPath, outputPath);
@@ -198,22 +199,21 @@ export const handleImageCompression = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    console.error('Error processing images:', error);
-    res.status(500).send('Error processing images.');
+    console.error("Error processing images:", error);
+    res.status(500).send("Error processing images.");
   }
 };
-
 
 export const deleteOldFiles = async (req, res) => {
   try {
     const { daysOld } = req.body;
-    const directory = 'public/uploads/new/doc';
+    const directory = "public/uploads/new/doc";
 
     // Ensure the directory exists, create it if it doesn't
     try {
       await fs.access(directory);
     } catch (err) {
-      if (err.code === 'ENOENT') {
+      if (err.code === "ENOENT") {
         // Directory does not exist, create it
         await fs.mkdir(directory, { recursive: true });
         console.log(`Created directory: ${directory}`);
@@ -246,11 +246,11 @@ export const deleteOldFiles = async (req, res) => {
 
     // Send success response
     res.status(200).send({
-      message: 'Old files deleted successfully',
+      message: "Old files deleted successfully",
       success: true,
     });
   } catch (error) {
-    console.error('Error occurred during file deletion:', error);
+    console.error("Error occurred during file deletion:", error);
     res.status(500).send({
       message: `Error occurred during file deletion: ${error.message}`,
       success: false,
@@ -258,7 +258,6 @@ export const deleteOldFiles = async (req, res) => {
     });
   }
 };
-
 
 export const SignupUserType = async (req, res) => {
   try {
@@ -331,7 +330,7 @@ export const SignupUserCarImage = upload.fields([
 ]);
 
 export const SignupUserValetType = async (req, res) => {
-  console.log(req.body)
+  console.log(req.body);
   try {
     const {
       username,
@@ -340,7 +339,9 @@ export const SignupUserValetType = async (req, res) => {
       carName,
       VendorId,
       driverId,
-      Valet_Model, mode, payment
+      Valet_Model,
+      mode,
+      payment,
     } = req.body;
     const { carImage } = req.files;
 
@@ -350,12 +351,11 @@ export const SignupUserValetType = async (req, res) => {
       // Update existing user details
       existingUser.username = username;
       existingUser.carNumber = carNumber;
-      existingUser.carName = carName ? carName : '';
+      existingUser.carName = carName ? carName : "";
       if (carImage && carImage.length > 0) {
         existingUser.carImage = carImage[0].path;
       }
       await existingUser.save();
-
     } else {
       // Create new user
       existingUser = await userModel.create({
@@ -363,43 +363,43 @@ export const SignupUserValetType = async (req, res) => {
         phone,
         carImage: carImage && carImage.length > 0 ? carImage[0].path : "",
         carNumber,
-        carName: carName ? carName : '',
+        carName: carName ? carName : "",
         verified: 1,
       });
     }
 
     // RecCar(phone)
-    const lastvaletRide = await valetRideModel.findOne().sort({ ValetRide_Id: -1 }).limit(1);
+    const lastvaletRide = await valetRideModel
+      .findOne()
+      .sort({ ValetRide_Id: -1 })
+      .limit(1);
     let ValetRide_Id = 1; // Default to 1 if no orders exist yet
 
     if (lastvaletRide) {
       ValetRide_Id = lastvaletRide.ValetRide_Id + 1;
     }
 
-
     const valetRideData = {
       userId: existingUser._id,
       VendorId,
       driverId,
       Valet_Model,
-      ValetRide_Id
+      ValetRide_Id,
     };
 
-    if (mode !== '') {
+    if (mode !== "") {
       valetRideData.mode = mode; // Add mode if not empty
     }
 
-    if (payment !== '') {
+    if (payment !== "") {
       valetRideData.payment = payment; // Add mode if not empty
     }
 
     const valetRide = new valetRideModel(valetRideData);
 
-
     await NotiCar(phone, valetRide.ValetRide_Id);
 
     await valetRide.save();
-
 
     await valetModel.findByIdAndUpdate(
       Valet_Model, // Find by Valet_Model _id
@@ -426,8 +426,6 @@ export const SignupUserValetType = async (req, res) => {
   }
 };
 
-
-
 export const CreateValetRide = async (req, res) => {
   try {
     const {
@@ -442,7 +440,7 @@ export const CreateValetRide = async (req, res) => {
       total,
       date,
       time,
-      mode
+      mode,
       // payment
     } = req.body;
 
@@ -461,16 +459,15 @@ export const CreateValetRide = async (req, res) => {
 
     await existingUser.save();
 
-
-
-    const lastvaletRide = await valetRideModel.findOne().sort({ ValetRide_Id: -1 }).limit(1);
+    const lastvaletRide = await valetRideModel
+      .findOne()
+      .sort({ ValetRide_Id: -1 })
+      .limit(1);
     let ValetRide_Id = 1; // Default to 1 if no orders exist yet
 
     if (lastvaletRide) {
       ValetRide_Id = lastvaletRide.ValetRide_Id + 1;
     }
-
-
 
     const valetRideData = {
       userId: existingUser._id,
@@ -483,9 +480,9 @@ export const CreateValetRide = async (req, res) => {
       time,
       payment: 1,
       type: 1,
-    }
+    };
 
-    if (mode !== '') {
+    if (mode !== "") {
       valetRideData.mode = mode; // Add mode if not empty
     }
 
@@ -493,7 +490,6 @@ export const CreateValetRide = async (req, res) => {
     const valetRide = new valetRideModel(valetRideData);
 
     await valetRide.save();
-
 
     await valetModel.findByIdAndUpdate(
       Valet_Model, // Find by Valet_Model _id
@@ -520,9 +516,6 @@ export const CreateValetRide = async (req, res) => {
   }
 };
 
-
-
-
 export const userAdminValet = async (req, res) => {
   try {
     const valet = await valetModel.find({ type: 1 });
@@ -546,8 +539,7 @@ export const userAdminValet = async (req, res) => {
       error: error.message,
     });
   }
-}
-
+};
 
 export const userAdminValetId = async (req, res) => {
   try {
@@ -585,7 +577,6 @@ export const userAdminValetId = async (req, res) => {
   }
 };
 
-
 export const UpdateUserCarImage = uploadDoc.fields([
   { name: "carImage", maxCount: 1 },
   { name: "carImage1", maxCount: 1 },
@@ -598,12 +589,21 @@ export const UpdateUserCarImage = uploadDoc.fields([
   { name: "carImage8", maxCount: 1 },
 ]);
 
-
 export const UpdateUserValetType = async (req, res) => {
   try {
     const { username, phone, carNumber, carName } = req.body;
 
-    const { carImage, carImage1, carImage2, carImage3, carImage4, carImage5, carImage6, carImage7, carImage8 } = req.files;
+    const {
+      carImage,
+      carImage1,
+      carImage2,
+      carImage3,
+      carImage4,
+      carImage5,
+      carImage6,
+      carImage7,
+      carImage8,
+    } = req.files;
 
     // Check if the phone number exists in the request body
     if (!phone) {
@@ -612,7 +612,6 @@ export const UpdateUserValetType = async (req, res) => {
         message: "Phone number is required for updating user.",
       });
     }
-
 
     // Prepare the update object based on provided fields
     let updateFields = {
@@ -626,19 +625,27 @@ export const UpdateUserValetType = async (req, res) => {
       updateFields.carImage = carImage[0].path;
     }
 
-    if (carImage1 || carImage2 || carImage3 || carImage4 || carImage5 || carImage6 || carImage7 || carImage8) {
+    if (
+      carImage1 ||
+      carImage2 ||
+      carImage3 ||
+      carImage4 ||
+      carImage5 ||
+      carImage6 ||
+      carImage7 ||
+      carImage8
+    ) {
       updateFields.carImages = {
-        carImage1: carImage1 && carImage1[0] ? carImage1[0].path : '',
-        carImage2: carImage2 && carImage2[0] ? carImage2[0].path : '',
-        carImage3: carImage3 && carImage3[0] ? carImage3[0].path : '',
-        carImage4: carImage4 && carImage4[0] ? carImage4[0].path : '',
-        carImage5: carImage5 && carImage5[0] ? carImage5[0].path : '',
-        carImage6: carImage6 && carImage6[0] ? carImage6[0].path : '',
-        carImage7: carImage7 && carImage7[0] ? carImage7[0].path : '',
-        carImage8: carImage8 && carImage8[0] ? carImage8[0].path : '',
+        carImage1: carImage1 && carImage1[0] ? carImage1[0].path : "",
+        carImage2: carImage2 && carImage2[0] ? carImage2[0].path : "",
+        carImage3: carImage3 && carImage3[0] ? carImage3[0].path : "",
+        carImage4: carImage4 && carImage4[0] ? carImage4[0].path : "",
+        carImage5: carImage5 && carImage5[0] ? carImage5[0].path : "",
+        carImage6: carImage6 && carImage6[0] ? carImage6[0].path : "",
+        carImage7: carImage7 && carImage7[0] ? carImage7[0].path : "",
+        carImage8: carImage8 && carImage8[0] ? carImage8[0].path : "",
       };
     }
-
 
     // Find and update the user based on the phone number
     let updatedUser = await userModel.findOneAndUpdate(
@@ -685,11 +692,8 @@ export const userValetRideUserController = async (req, res) => {
     // Assuming you want to find a valet record based on userId and valetId
     const valet = await valetRideModel
       .find({
-        $or: [
-          { driverId: driverId },
-          { driverIdDrop: driverId }
-        ],
-        Valet_Model: valetId
+        $or: [{ driverId: driverId }, { driverIdDrop: driverId }],
+        Valet_Model: valetId,
       })
       .populate(
         "userId",
@@ -704,7 +708,6 @@ export const userValetRideUserController = async (req, res) => {
         "_id username email phone carImage carImages carNumber carName PickupStartLocation PickupEndLocation DropStartLocation DropEndLocation mode"
       ) // Populate userId with specified fields
       .populate("VendorId", "_id username email phone "); // Populate VendorId with specified fields
-
 
     if (!valet) {
       return res.status(404).json({
@@ -728,7 +731,6 @@ export const userValetRideUserController = async (req, res) => {
     });
   }
 };
-
 
 export const userValetRideUserControllerById = async (req, res) => {
   try {
@@ -751,7 +753,6 @@ export const userValetRideUserControllerById = async (req, res) => {
       ) // Populate userId with specified fields
       .populate("VendorId", "_id username email phone "); // Populate VendorId with specified fields
 
-
     if (!valet) {
       return res.status(404).json({
         success: false,
@@ -775,7 +776,6 @@ export const userValetRideUserControllerById = async (req, res) => {
   }
 };
 
-
 export const ValetRideUserController = async (req, res) => {
   const { valetId } = req.params;
 
@@ -786,7 +786,6 @@ export const ValetRideUserController = async (req, res) => {
       .populate("driverIdDrop", "_id username email phone profile") // Populate VendorId with specified fields
       .populate("driverId", "_id username email phone profile") // Populate VendorId with specified fields
       .populate("Valet_Model", " support"); // Populate VendorId with specified fields
-
 
     if (!valet) {
       return res.status(404).json({
@@ -800,7 +799,6 @@ export const ValetRideUserController = async (req, res) => {
       success: true,
       valet,
     });
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -809,27 +807,23 @@ export const ValetRideUserController = async (req, res) => {
       error: error.message,
     });
   }
-
-}
+};
 
 export const ValetRideNotiUserController = async (req, res) => {
   const { valetId } = req.params;
 
   try {
-
-    const noti = await valetRideModel
-      .findOneAndUpdate(
-        { ValetRide_Id: Number(valetId) },
-        { $inc: { noti: 1 } }, // Increment the notifications count by 1
-        { new: true } // Return the updated user document
-      );
+    const noti = await valetRideModel.findOneAndUpdate(
+      { ValetRide_Id: Number(valetId) },
+      { $inc: { noti: 1 } }, // Increment the notifications count by 1
+      { new: true } // Return the updated user document
+    );
 
     return res.status(200).json({
       message: "Single Valet Found By valet ID ",
       success: true,
-      noti
+      noti,
     });
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -838,9 +832,7 @@ export const ValetRideNotiUserController = async (req, res) => {
       error: error.message,
     });
   }
-
-}
-
+};
 
 export const userValetParkingUserController = async (req, res) => {
   try {
@@ -876,9 +868,6 @@ export const userValetParkingUserController = async (req, res) => {
     });
   }
 };
-
-
-
 
 // notification functions
 
@@ -2117,8 +2106,6 @@ export const UpdateUserCancelOrder = async (req, res) => {
   }
 };
 
-
-
 export const UpdateUserReviewOrder = async (req, res) => {
   try {
     const { userId, id, comment, rating, reviewDriverId } = req.body;
@@ -2143,7 +2130,7 @@ export const UpdateUserReviewOrder = async (req, res) => {
       userId,
       orderId: id,
       rating,
-      comment
+      comment,
     });
 
     await newReview.save();
@@ -2166,12 +2153,12 @@ export const UpdateUserReviewOrder = async (req, res) => {
       { new: true }
     );
 
-    console.log(userId, userddModel)
+    console.log(userId, userddModel);
     // Success response
     res.status(200).json({
       success: true,
       message: "Review added successfully",
-      userId: userId
+      userId: userId,
     });
   } catch (error) {
     console.error("Error occurred during Ride update:", error);
@@ -2637,12 +2624,12 @@ async function sendOrderConfirmationEmail(email, username, userId, newOrder) {
       <img width="200" src="https://backend-9mwl.onrender.com/uploads/image-1712229850358.PNG" />
  </th>
         <th style="text-align:right;font-weight:400;"> ${new Date(
-        newOrder.createdAt
-      ).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })} </th>
+          newOrder.createdAt
+        ).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })} </th>
       </tr>
     </thead>
     <tbody>
@@ -2652,12 +2639,15 @@ async function sendOrderConfirmationEmail(email, username, userId, newOrder) {
       <tr>
         <td colspan="2" style="border: solid 1px #ddd; padding:10px 20px;">
           <p style="font-size:14px;margin:0 0 6px 0;"><span style="font-weight:bold;display:inline-block;min-width:150px">Order status</span><b style="color:green;font-weight:normal;margin:0">Placed</b></p>
-          <p style="font-size:14px;margin:0 0 6px 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Order ID</span> ${newOrder.orderId
-        }</p>
-          <p style="font-size:14px;margin:0 0 0 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Order amount</span> Rs. ${newOrder.totalAmount
-        }</p>
-          <p style="font-size:14px;margin:0 0 0 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Payment Mode</span> ${newOrder.mode
-        }</p>
+          <p style="font-size:14px;margin:0 0 6px 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Order ID</span> ${
+            newOrder.orderId
+          }</p>
+          <p style="font-size:14px;margin:0 0 0 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Order amount</span> Rs. ${
+            newOrder.totalAmount
+          }</p>
+          <p style="font-size:14px;margin:0 0 0 0;"><span style="font-weight:bold;display:inline-block;min-width:146px">Payment Mode</span> ${
+            newOrder.mode
+          }</p>
         </td>
       </tr>
       <tr>
@@ -2665,18 +2655,22 @@ async function sendOrderConfirmationEmail(email, username, userId, newOrder) {
       </tr>
       <tr>
         <td  style="width:50%;padding:20px;vertical-align:top">
-          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px">Name</span> ${newOrder.details[0].username
-        } </p>
-          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Email</span>  ${newOrder.details[0].email
-        }  </p>
+          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px">Name</span> ${
+            newOrder.details[0].username
+          } </p>
+          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Email</span>  ${
+            newOrder.details[0].email
+          }  </p>
       
           
         </td>
         <td style="width:50%;padding:20px;vertical-align:top">
-            <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Phone</span> +91-${newOrder.details[0].phone
-        }</p>
-          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Address</span> ${newOrder.details[0].address
-        } </p>
+            <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Phone</span> +91-${
+              newOrder.details[0].phone
+            }</p>
+          <p style="margin:0 0 10px 0;padding:0;font-size:14px;"><span style="display:block;font-weight:bold;font-size:13px;">Address</span> ${
+            newOrder.details[0].address
+          } </p>
            
           
         </td>
@@ -2696,8 +2690,8 @@ async function sendOrderConfirmationEmail(email, username, userId, newOrder) {
       </tr>
 
       ${newOrder.items
-          .map(
-            (Pro) => `
+        .map(
+          (Pro) => `
         <tr>
           <td  style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;" >
             <div className="d-flex mb-2">
@@ -2726,25 +2720,26 @@ async function sendOrderConfirmationEmail(email, username, userId, newOrder) {
           <td  style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;text-align: right;" >₹ ${Pro.price}</td>
         </tr>
         `
-          )
-          .join("")}
+        )
+        .join("")}
 
     </tbody>
     <tfoot>
         <tr>
             <td colspan="2" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;">Subtotal</td>
-            <td  colspan="2"  class="text-end" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;text-align: right;">₹${newOrder.items.reduce(
-            (total, item) => total + item.quantity * item.price,
-            0
-          ) -
-        Math.floor(
-          newOrder.items.reduce((acc, item) => {
-            const itemPrice = item.quantity * item.price;
-            const itemGST = (itemPrice * item.gst) / 100;
-            return acc + itemGST;
-          }, 0)
-        )
-        }</td>
+            <td  colspan="2"  class="text-end" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;text-align: right;">₹${
+              newOrder.items.reduce(
+                (total, item) => total + item.quantity * item.price,
+                0
+              ) -
+              Math.floor(
+                newOrder.items.reduce((acc, item) => {
+                  const itemPrice = item.quantity * item.price;
+                  const itemGST = (itemPrice * item.gst) / 100;
+                  return acc + itemGST;
+                }, 0)
+              )
+            }</td>
         </tr>
 
        
@@ -2762,27 +2757,30 @@ async function sendOrderConfirmationEmail(email, username, userId, newOrder) {
 
         <tr>
             <td colspan="2" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;">Shipping</td>
-            <td colspan="2"  class="text-end" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;text-align: right;">₹${newOrder.shipping
-        }</td>
+            <td colspan="2"  class="text-end" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;text-align: right;">₹${
+              newOrder.shipping
+            }</td>
         </tr>
         <tr>
             <td colspan="2" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;">Discount</td>
             <td colspan="2"  class="text-danger text-end" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6; text-align: right;">
-           - ${newOrder.items.reduce(
-          (total, item) => total + item.quantity * item.price,
-          0
-        ) -
-          Math.abs(newOrder.discount) ===
-          0
-          ? "0"
-          : Math.abs(newOrder.discount)
-        }
+           - ${
+             newOrder.items.reduce(
+               (total, item) => total + item.quantity * item.price,
+               0
+             ) -
+               Math.abs(newOrder.discount) ===
+             0
+               ? "0"
+               : Math.abs(newOrder.discount)
+           }
           </td>
         </tr>
         <tr class="fw-bold">
             <td colspan="2" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;">TOTAL</td>
-            <td colspan="2"  class="text-end" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;text-align: right;">₹${newOrder.totalAmount
-        }</td>
+            <td colspan="2"  class="text-end" style="padding: .75rem; vertical-align: top; border-top: 1px solid #dee2e6;text-align: right;">₹${
+              newOrder.totalAmount
+            }</td>
         </tr>
     </tfoot>
 </table>
@@ -3215,13 +3213,13 @@ export const userOrdersController = async (req, res) => {
         sort: { createdAt: -1 },
       },
       populate: {
-        path: 'driverId',
-        select: '_id username email phone ratingId', // Include fields from the driver
+        path: "driverId",
+        select: "_id username email phone ratingId", // Include fields from the driver
         // populate: {
         //   path: 'ratingId',
         //   select: 'rating comment' // Include fields from the rating
         // }
-      }
+      },
     });
     if (!userOrder) {
       return res.status(200).send({
@@ -3937,7 +3935,6 @@ const sendValetOTP = async (phone, otp) => {
   }
 };
 
-
 const RecCar = async (phone) => {
   try {
     // Construct the request URL with query parameters
@@ -3973,7 +3970,6 @@ const RecCar = async (phone) => {
     throw new Error("Failed to send SMS");
   }
 };
-
 
 const NotiCar = async (phone, id) => {
   try {
@@ -4046,8 +4042,6 @@ const CarDel = async (phone, otp) => {
     throw new Error("Failed to send SMS");
   }
 };
-
-
 
 export const SendOTP = async (req, res) => {
   try {
@@ -4151,7 +4145,6 @@ export const SignupNewUser = async (req, res) => {
     const otp = Math.floor(1000 + Math.random() * 9000);
     // // Send OTP via Phone
 
-
     // Validation
     if (!phone) {
       return res.status(400).json({
@@ -4226,8 +4219,6 @@ export const LoginUserWithOTP = async (req, res) => {
         token: existingUser.token,
         otp: otp,
       });
-
-
     }
   } catch (error) {
     console.error("Error on signup:", error);
@@ -4386,6 +4377,7 @@ export const AuthUserByID = async (req, res) => {
     });
   }
 };
+
 export const AuthUserByPhone = async (req, res) => {
   try {
     const { phone } = req.params;
@@ -4420,13 +4412,49 @@ export const AuthUserByPhone = async (req, res) => {
   }
 };
 
+export const AuthUserByPhoneCar = async (req, res) => {
+  try {
+    const { phone } = req.params;
+    console.log(phone);
+    const existingUser = await userModel.findOne({
+      $or: [{ phone: phone }, { carNumber: String(phone) }],
+    });
 
+    if (existingUser) {
+      return res.status(200).json({
+        success: true,
+        message: "User Found",
+        existingUser: {
+          _id: existingUser._id,
+          username: existingUser.username,
+          carName: existingUser.username,
+          carNumber: existingUser.carNumber,
+          carImage: existingUser.carImage,
+          phone: existingUser.phone,
+        },
+      });
 
+      // return res.status(401).send({
+    } else {
+      return res.status(401).send({
+        success: false,
+        message: "user Not found",
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      message: `error on phone ${error}`,
+      sucesss: false,
+      error,
+    });
+  }
+};
 
 export const updateProfileUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, state, email, address, password, longitude, latitude } = req.body;
+    const { username, state, email, address, password, longitude, latitude } =
+      req.body;
     const profile = req.files ? req.files.profile : undefined;
 
     // Validate input fields based on whether password is provided
@@ -5321,7 +5349,6 @@ export const driverValeRideViewController = async (req, res) => {
   }
 };
 
-
 export const vendorValeRideViewController = async (req, res) => {
   try {
     const { valetId } = req.params;
@@ -5377,7 +5404,7 @@ export const getAllBookValet = async (req, res) => {
           { VendorId: [] }, // Matches documents where VendorId is an empty string
         ],
         CancelId: { $ne: cancelId }, // Exclude bookings where CancelId matches
-        type: 0 // Matches documents where type equals 0
+        type: 0, // Matches documents where type equals 0
       })
       .populate("userId")
       .lean();
@@ -5517,22 +5544,21 @@ export const userValetViewController_old = async (req, res) => {
     const { userId, valetId } = req.params;
 
     // Find the user by ID and populate their orders
-    const userOrder = await userModel.findById(userId)
-      .populate({
-        path: "valets",
-        match: { _id: valetId }, // Match the order ID
-        populate: [
-          {
-            path: "VendorId", // Populate the VendorId
-            select: "_id username email phone", // Select the fields you want to include from the VendorId
-          },
-          {
-            path: "Valetride_Model", // Populate the Valetride_Model array
-            select: "_id driverId PickupStartLocation PickupEndLocation DropStartLocation DropEndLocation",
-          },
-        ],
-
-      })
+    const userOrder = await userModel.findById(userId).populate({
+      path: "valets",
+      match: { _id: valetId }, // Match the order ID
+      populate: [
+        {
+          path: "VendorId", // Populate the VendorId
+          select: "_id username email phone", // Select the fields you want to include from the VendorId
+        },
+        {
+          path: "Valetride_Model", // Populate the Valetride_Model array
+          select:
+            "_id driverId PickupStartLocation PickupEndLocation DropStartLocation DropEndLocation",
+        },
+      ],
+    });
 
     // If user or order not found, return appropriate response
     if (!userOrder || !userOrder.orders) {
@@ -5595,39 +5621,31 @@ export const userValetViewController = async (req, res) => {
 };
 
 export const UserAllValtRides = async (req, res) => {
-
   const { valetId } = req.params;
 
   try {
     const Rides = await valetRideModel.find({ Valet_Model: valetId });
 
     if (!Rides) {
-      return res.status(200).send
-        ({
-          message: 'NO Rides Found',
-          success: false,
-        });
-    }
-    return res.status(200).send
-      ({
-        message: 'All Rides List ',
-        proCount: Rides.length,
-        success: true,
-        Rides,
-      });
-
-  } catch (error) {
-    return res.status(500).send
-      ({
-        message: `error while All Rides ${error}`,
+      return res.status(200).send({
+        message: "NO Rides Found",
         success: false,
-        error
-      })
+      });
+    }
+    return res.status(200).send({
+      message: "All Rides List ",
+      proCount: Rides.length,
+      success: true,
+      Rides,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      message: `error while All Rides ${error}`,
+      success: false,
+      error,
+    });
   }
-
-
-}
-
+};
 
 export const driverValetViewController = async (req, res) => {
   try {
@@ -5752,14 +5770,16 @@ export const AllDriversByVendor = async (req, res) => {
 };
 
 export const AssignedDriverValet = async (req, res) => {
-
   try {
     const { id } = req.params;
     const { driverIds } = req.body;
 
-    console.log(driverIds)
+    console.log(driverIds);
     // Check if driverIds is an array of valid ObjectId (24 hex characters)
-    if (!Array.isArray(driverIds) || !driverIds.every(id => /^[0-9a-fA-F]{24}$/.test(id))) {
+    if (
+      !Array.isArray(driverIds) ||
+      !driverIds.every((id) => /^[0-9a-fA-F]{24}$/.test(id))
+    ) {
       return res.status(400).json({
         message: "Invalid driverIds array",
         success: false,
@@ -5828,9 +5848,7 @@ export const AssignedDriverValet = async (req, res) => {
       error,
     });
   }
-
 };
-
 
 export const UnAssignedDriverValet = async (req, res) => {
   try {
@@ -5914,7 +5932,6 @@ export const UnAssignedDriverValet = async (req, res) => {
   }
 };
 
-
 export const AssignedDriverValetRide = async (req, res) => {
   try {
     const { id } = req.params;
@@ -5937,10 +5954,14 @@ export const AssignedDriverValetRide = async (req, res) => {
       });
     }
 
-    if (order.driverIdDrop !== null && order.driverIdDrop !== undefined && (order.driverIdDrop.toString() === driverId)) {
+    if (
+      order.driverIdDrop !== null &&
+      order.driverIdDrop !== undefined &&
+      order.driverIdDrop.toString() === driverId
+    ) {
       // Remove the driverId if it's already assigned
       order.driverIdDrop = null;
-      console.log('remove');
+      console.log("remove");
       const text = `Valet parking Id #${order.ValetRide_Id} removed By Vendor`;
       const notification = new notificationModel({
         text,
@@ -5956,9 +5977,7 @@ export const AssignedDriverValetRide = async (req, res) => {
         message: "Driver removed successfully!",
         success: true,
       });
-
     } else {
-
       order.driverIdDrop = driverId;
 
       const text = `Valet parking Id #${order.ValetRide_Id} added By Vendor`;
@@ -5976,10 +5995,7 @@ export const AssignedDriverValetRide = async (req, res) => {
         message: "Driver added successfully!",
         success: true,
       });
-
     }
-
-
   } catch (error) {
     console.error(`Error while updating Order: ${error}`);
     return res.status(500).json({
@@ -5989,7 +6005,6 @@ export const AssignedDriverValetRide = async (req, res) => {
     });
   }
 };
-
 
 export const StartValetRide = async (req, res) => {
   try {
@@ -6004,18 +6019,15 @@ export const StartValetRide = async (req, res) => {
     }
 
     // Check if the order exists
-    const order = await valetModel.findById(orderId).populate('userId'); // Populate userId to access phone number
+    const order = await valetModel.findById(orderId).populate("userId"); // Populate userId to access phone number
     // Generate 4-digit random OTP
     const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
-
-
 
     // Create two different OTPs
     const startOTP = generateOTP();
     //  const endOTP = generateOTP();
     order.startOTP = startOTP;
     //  order.endOTP = endOTP;
-
 
     if (!order) {
       return res.status(404).json({
@@ -6065,7 +6077,7 @@ export const EndValetRide = async (req, res) => {
     }
 
     // Check if the order exists
-    const order = await valetModel.findById(orderId).populate('userId'); // Populate userId to access phone number
+    const order = await valetModel.findById(orderId).populate("userId"); // Populate userId to access phone number
     // Generate 4-digit random OTP
     const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
@@ -6081,7 +6093,6 @@ export const EndValetRide = async (req, res) => {
       });
     }
 
-
     if (order.type === 0) {
       // Send OTP to the user's phone
       if (order.userId && order.userId.phone) {
@@ -6093,7 +6104,6 @@ export const EndValetRide = async (req, res) => {
         });
       }
     }
-
 
     await order.save();
 
@@ -6272,7 +6282,7 @@ export const UpdateUserValetRide = async (req, res) => {
       DropStartLocation,
       DropEndLocation,
       driverId,
-      phone
+      phone,
     } = req.body;
     console.log(phone);
     const id = req.params.id;
@@ -6291,64 +6301,78 @@ export const UpdateUserValetRide = async (req, res) => {
 
     // Ensure that each location object is properly structured with `location`, `longitude`, and `latitude`
     if (PickupStartLocation) {
-      if (PickupStartLocation.location && PickupStartLocation.longitude && PickupStartLocation.latitude) {
+      if (
+        PickupStartLocation.location &&
+        PickupStartLocation.longitude &&
+        PickupStartLocation.latitude
+      ) {
         updateFields.PickupStartLocation = {
           location: PickupStartLocation.location,
           longitude: PickupStartLocation.longitude,
           latitude: PickupStartLocation.latitude,
           parking: PickupStartLocation.parking,
-
         };
         // await RecCar(phone);
       } else {
         return res.status(400).json({
           success: false,
-          message: "PickupStartLocation must include location, longitude, and latitude",
+          message:
+            "PickupStartLocation must include location, longitude, and latitude",
         });
       }
     }
 
     if (PickupEndLocation) {
-      if (PickupEndLocation.location && PickupEndLocation.longitude && PickupEndLocation.latitude) {
+      if (
+        PickupEndLocation.location &&
+        PickupEndLocation.longitude &&
+        PickupEndLocation.latitude
+      ) {
         updateFields.PickupEndLocation = {
           location: PickupEndLocation.location,
           longitude: PickupEndLocation.longitude,
           latitude: PickupEndLocation.latitude,
           parking: PickupEndLocation.parking,
-
         };
         //  await NotiCar(phone, ridemodel.ValetRide_Id);
         //  console.log(phone, id, 'piccc')
       } else {
         return res.status(400).json({
           success: false,
-          message: "PickupEndLocation must include location, longitude, and latitude",
+          message:
+            "PickupEndLocation must include location, longitude, and latitude",
         });
       }
     }
 
     if (DropStartLocation) {
       // await CarDel(phone, OTP);
-      if (DropStartLocation.location && DropStartLocation.longitude && DropStartLocation.latitude) {
+      if (
+        DropStartLocation.location &&
+        DropStartLocation.longitude &&
+        DropStartLocation.latitude
+      ) {
         updateFields.DropStartLocation = {
           location: DropStartLocation.location,
           longitude: DropStartLocation.longitude,
           latitude: DropStartLocation.latitude,
           parking: DropStartLocation.parking,
         };
-
       } else {
         return res.status(400).json({
           success: false,
-          message: "DropStartLocation must include location, longitude, and latitude",
+          message:
+            "DropStartLocation must include location, longitude, and latitude",
         });
       }
     }
 
     if (DropEndLocation) {
-
-
-      if (DropEndLocation.location && DropEndLocation.longitude && DropEndLocation.latitude) {
+      if (
+        DropEndLocation.location &&
+        DropEndLocation.longitude &&
+        DropEndLocation.latitude
+      ) {
         updateFields.DropEndLocation = {
           location: DropEndLocation.location,
           longitude: DropEndLocation.longitude,
@@ -6357,11 +6381,11 @@ export const UpdateUserValetRide = async (req, res) => {
         };
         updateFields.OTP = OTP;
         updateFields.OTP = OTP;
-
       } else {
         return res.status(400).json({
           success: false,
-          message: "DropEndLocation must include location, longitude, and latitude",
+          message:
+            "DropEndLocation must include location, longitude, and latitude",
         });
       }
     }
@@ -6401,9 +6425,7 @@ export const UpdateUserValetRide = async (req, res) => {
 
 export const UpdateUserValetRideVerifyOTP_Old = async (req, res) => {
   try {
-    const {
-      OTP
-    } = req.body;
+    const { OTP } = req.body;
     const id = req.params.id;
 
     let updateFields;
@@ -6417,7 +6439,7 @@ export const UpdateUserValetRideVerifyOTP_Old = async (req, res) => {
       });
     } else {
       if (OTP.toString() === updatedValet.OTP.toString()) {
-        console.log(OTP.toString(), updatedValet.OTP.toString())
+        console.log(OTP.toString(), updatedValet.OTP.toString());
         // Success response
         await valetRideModel.findByIdAndUpdate(
           id,
@@ -6439,11 +6461,7 @@ export const UpdateUserValetRideVerifyOTP_Old = async (req, res) => {
           message: "OTP NOT Verified",
         });
       }
-
     }
-
-
-
   } catch (error) {
     console.error("Error occurred during Valet update:", error);
     return res.status(500).json({
@@ -6454,12 +6472,9 @@ export const UpdateUserValetRideVerifyOTP_Old = async (req, res) => {
   }
 };
 
-
 export const UpdateUserValetRideVerifyOTP = async (req, res) => {
   try {
-    const {
-      OTP
-    } = req.body;
+    const { OTP } = req.body;
     const id = req.params.id;
 
     let updateFields;
@@ -6473,7 +6488,7 @@ export const UpdateUserValetRideVerifyOTP = async (req, res) => {
       });
     } else {
       if (OTP.toString() === updatedValet.ValetRide_Id.toString()) {
-        console.log(OTP.toString(), updatedValet.ValetRide_Id.toString())
+        console.log(OTP.toString(), updatedValet.ValetRide_Id.toString());
         // Success response
         await valetRideModel.findByIdAndUpdate(
           id,
@@ -6495,11 +6510,7 @@ export const UpdateUserValetRideVerifyOTP = async (req, res) => {
           message: "OTP NOT Verified",
         });
       }
-
     }
-
-
-
   } catch (error) {
     console.error("Error occurred during Valet update:", error);
     return res.status(500).json({
@@ -6510,11 +6521,8 @@ export const UpdateUserValetRideVerifyOTP = async (req, res) => {
   }
 };
 
-
-
 export const UpdateUserValetRideKey = async (req, res) => {
   try {
-
     const id = req.params.id;
 
     const updatedValet = await valetRideModel.findById(id);
@@ -6525,7 +6533,6 @@ export const UpdateUserValetRideKey = async (req, res) => {
         message: "Valet not found",
       });
     } else {
-
       if (updatedValet.pickupKey === 0) {
         await valetRideModel.findByIdAndUpdate(
           id,
@@ -6545,16 +6552,11 @@ export const UpdateUserValetRideKey = async (req, res) => {
         });
       }
 
-
       res.status(200).json({
         success: true,
         message: "Valet key updated successfully",
       });
-
     }
-
-
-
   } catch (error) {
     console.error("Error occurred during Valet update:", error);
     return res.status(500).json({
@@ -6567,7 +6569,6 @@ export const UpdateUserValetRideKey = async (req, res) => {
 
 export const VendorUpdateUserValetRideKey = async (req, res) => {
   try {
-
     const id = req.params.id;
 
     const updatedValet = await valetRideModel.findById(id);
@@ -6578,14 +6579,16 @@ export const VendorUpdateUserValetRideKey = async (req, res) => {
         message: "Valet not found",
       });
     } else {
-
       if (updatedValet.VendorPickupKey === 0) {
         await valetRideModel.findByIdAndUpdate(
           id,
           { VendorPickupKey: 1 },
           { new: true }
         );
-      } else if (updatedValet.VendorPickupKey === 1 || updatedValet.userDropKey === 0) {
+      } else if (
+        updatedValet.VendorPickupKey === 1 ||
+        updatedValet.userDropKey === 0
+      ) {
         await valetRideModel.findByIdAndUpdate(
           id,
           { userDropKey: 1 },
@@ -6598,14 +6601,11 @@ export const VendorUpdateUserValetRideKey = async (req, res) => {
         });
       }
 
-
       res.status(200).json({
         success: true,
         message: "Valet key updated successfully",
       });
-
     }
-
   } catch (error) {
     console.error("Error occurred during Valet update:", error);
     return res.status(500).json({
@@ -6616,26 +6616,23 @@ export const VendorUpdateUserValetRideKey = async (req, res) => {
   }
 };
 
-
 export const editValetRidePayment = async (req, res) => {
   try {
     const { id } = req.params;
     const { payment } = req.body;
 
     const updateFields = {
-      payment
-    }
+      payment,
+    };
 
     await valetRideModel.findByIdAndUpdate(id, updateFields, {
       new: true,
     });
 
-
     return res.status(200).json({
       message: "Valet Ride Status Updated!",
       success: true,
     });
-
   } catch (error) {
     return res.status(400).json({
       message: `Error while updating Valet Ride: ${error}`,
@@ -6644,7 +6641,6 @@ export const editValetRidePayment = async (req, res) => {
     });
   }
 };
-
 
 ///////  for whatsapp api
 
