@@ -209,6 +209,7 @@ import {
   UpdateUserValetRideKey,
   VendorUpdateUserValetRideKey,
   deleteOldFiles,
+  send_notification,
 } from "../controller/userController.js";
 import authenticateToken from "../middleware/authMiddleware.js";
 import {
@@ -674,5 +675,6 @@ router.get("/vendor-update-valet-ride-key/:id/", VendorUpdateUserValetRideKey);
 router.post("/login-verify-otp/", checkOrigin, LoginAndVerifyOTP);
 
 router.post("/delete-old-files", checkOrigin, deleteOldFiles);
+router.post("/send-notification", checkOrigin, send_notification);
 
 export default router;

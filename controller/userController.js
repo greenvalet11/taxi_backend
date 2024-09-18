@@ -35,6 +35,7 @@ import { profile } from "console";
 import valetRideModel from "../models/valetRideModel.js";
 import { type } from "os";
 import fs from "fs/promises";
+import { messaging } from "../utils/firebaseAdmin.js";
 
 // import { sendMessage } from "../utils/whatsappClient.js";
 dotenv.config();
@@ -6678,5 +6679,24 @@ export const SignupUserValetTypeViaAPI = async (
       phoneId,
       "Hey, user something is missing please try again later "
     );
+  }
+};
+
+export const send_notification = async (req, res) => {
+  const { token, title, body } = req.body;
+
+  const message = {
+    notification: {
+      title: title,
+      body: body,
+    },
+    token: token,
+  };
+
+  try {
+    const response = await messaging.send(message);
+    res.status(200).send(`Notification sent successfully: ${response}`);
+  } catch (error) {
+    res.status(500).send(`Error sending notification: ${error}`);
   }
 };
