@@ -2,41 +2,43 @@ import mongoose from "mongoose";
 import autopopulate from "mongoose-autopopulate"; // Import autopopulate plugin
 
 // Define the car image schema
-const carImageSchema = new mongoose.Schema({
-  carImage1: {
-    type: String,
-    default: '',
+const carImageSchema = new mongoose.Schema(
+  {
+    carImage1: {
+      type: String,
+      default: "",
+    },
+    carImage2: {
+      type: String,
+      default: "",
+    },
+    carImage3: {
+      type: String,
+      default: "",
+    },
+    carImage4: {
+      type: String,
+      default: "",
+    },
+    carImage5: {
+      type: String,
+      default: "",
+    },
+    carImage6: {
+      type: String,
+      default: "",
+    },
+    carImage7: {
+      type: String,
+      default: "",
+    },
+    carImage8: {
+      type: String,
+      default: "",
+    },
   },
-  carImage2: {
-    type: String,
-    default: '',
-  },
-  carImage3: {
-    type: String,
-    default: '',
-  },
-  carImage4: {
-    type: String,
-    default: '',
-  },
-  carImage5: {
-    type: String,
-    default: '',
-  },
-  carImage6: {
-    type: String,
-    default: '',
-  },
-  carImage7: {
-    type: String,
-    default: '',
-  },
-  carImage8: {
-    type: String,
-    default: '',
-  },
-}, { _id: false }); // _id: false prevents Mongoose from creating an _id field for this schema
-
+  { _id: false }
+); // _id: false prevents Mongoose from creating an _id field for this schema
 
 const userSchema = mongoose.Schema(
   {
@@ -115,7 +117,6 @@ const userSchema = mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Rating",
         autopopulate: true, // Enable autopopulate for this field
-
       },
     ],
 
@@ -193,6 +194,10 @@ const userSchema = mongoose.Schema(
       default: "",
     },
     latitude: {
+      type: String,
+      default: "",
+    },
+    fcm: {
       type: String,
       default: "",
     },

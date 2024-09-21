@@ -36,6 +36,7 @@ import valetRideModel from "../models/valetRideModel.js";
 import { type } from "os";
 import fs from "fs/promises";
 import { messaging } from "../utils/firebaseAdmin.js";
+import admin from "firebase-admin";
 
 // import { sendMessage } from "../utils/whatsappClient.js";
 dotenv.config();
@@ -819,7 +820,13 @@ export const ValetRideNotiUserController = async (req, res) => {
       { $inc: { noti: 1 } }, // Increment the notifications count by 1
       { new: true } // Return the updated user document
     );
-
+    // const userId = driverId
+    const userId = noti.driverId.toString();
+    const title = "user send notifications";
+    const body = "user send notifications";
+    // const userId = driverId
+    // console.log(noti);
+    await sendPushNotification(title, body, userId);
     return res.status(200).json({
       message: "Single Valet Found By valet ID ",
       success: true,
@@ -1593,12 +1600,15 @@ export const userTokenController = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await userModel.findById(id);
-
+    const { fcm } = req.query;
     if (!user) {
       return res.status(200).send({
         message: "Token expire",
         success: false,
       });
+    }
+    if (fcm) {
+      await userModel.findByIdAndUpdate(id, { fcm }, { new: true });
     }
     return res.status(200).send({
       message: "token Found",
@@ -6682,7 +6692,7 @@ export const SignupUserValetTypeViaAPI = async (
   }
 };
 
-export const send_notification = async (req, res) => {
+export const send_notification_all = async (req, res) => {
   const { token, title, body } = req.body;
 
   const message = {
@@ -6695,6 +6705,49 @@ export const send_notification = async (req, res) => {
 
   try {
     const response = await messaging.send(message);
+    res.status(200).send(`Notification sent successfully: ${response}`);
+  } catch (error) {
+    res.status(500).send(`Error sending notification: ${error}`);
+  }
+};
+
+// Function to send notification
+const sendPushNotification = async (title, body, userId) => {
+  const user = await userModel.findById(userId);
+  const token = user.fcm;
+  const payload = {
+    token: token,
+    notification: {
+      title: title,
+      body: body,
+      image: "https://cdn-icons-png.freepik.com/256/3602/3602175.png", // Add the image URL here
+    },
+  };
+
+  console.log(token);
+
+  try {
+    const response = await messaging.send(payload);
+    console.log("Successfully sent message:", response);
+  } catch (error) {
+    console.log("Error sending message:", error);
+  }
+};
+
+export const send_notification = async (req, res) => {
+  const { title, body, userId } = req.body;
+  const user = await userModel.findById(userId);
+  const message = {
+    notification: {
+      title: title,
+      body: body,
+    },
+    token: user.fcm,
+  };
+
+  try {
+    const response = await admin.messaging().sendToDevice(token, message);
+    console.log("Successfully sent message:", response);
     res.status(200).send(`Notification sent successfully: ${response}`);
   } catch (error) {
     res.status(500).send(`Error sending notification: ${error}`);
