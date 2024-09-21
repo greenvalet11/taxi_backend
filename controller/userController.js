@@ -1601,6 +1601,7 @@ export const userTokenController = async (req, res) => {
     const { id } = req.params;
     const user = await userModel.findById(id);
     const { fcm } = req.query;
+        console.log('fcm',fcm);
     if (!user) {
       return res.status(200).send({
         message: "Token expire",
